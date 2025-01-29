@@ -1,0 +1,82 @@
+{
+  "expo": {
+    "name": "Memor",
+    "slug": "memor",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "memor",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/images/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.yourdomain.memor",
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "Allow Memor to access your microphone for audio recording",
+        "NSCameraUsageDescription": "Allow Memor to access your camera",
+        "NSPhotoLibraryUsageDescription": "Allow Memor to access your photos"
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.yourdomain.memor",
+      "permissions": [
+        "RECORD_AUDIO",
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ]
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-secure-store",
+        {
+          "faceIDPermission": "Allow Memor to access Face ID for secure storage"
+        }
+      ]
+    ],
+    "fonts": [
+      {
+        "asset": "./assets/fonts/Nunito-Regular.ttf",
+        "family": "Nunito"
+      },
+      {
+        "asset": "./assets/fonts/Nunito-Medium.ttf",
+        "family": "Nunito-Medium"
+      },
+      {
+        "asset": "./assets/fonts/Nunito-Light.ttf",
+        "family": "Nunito-Light"
+      },
+      {
+        "asset": "./assets/fonts/Nunito-Bold.ttf",
+        "family": "Nunito-Bold"
+      },
+      {
+        "asset": "./assets/fonts/Inter-Regular.otf",
+        "family": "Inter"
+      },
+      {
+        "asset": "./assets/fonts/Inter-Medium.otf",
+        "family": "Inter-Medium"
+      },
+      {
+        "asset": "./assets/fonts/Inter-Light.otf",
+        "family": "Inter-Light"
+      },
+      {
+        "asset": "./assets/fonts/Inter-Bold.otf",
+        "family": "Inter-Bold"
+      }
+    ]
+  }
+}
