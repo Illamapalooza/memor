@@ -8,6 +8,8 @@ import { errorHandler } from "./middleware/error.middleware";
 import { logger } from "./utils/logger";
 import { subscriptionRoutes } from "./routes/subscription.routes";
 import { customerRoutes } from "./routes/customer.routes";
+import { ragRoutes } from "./routes/rag.routes";
+import { NoteVectorizationService } from "./services/note-vectorization.service";
 
 // Load environment variables
 dotenv.config();
@@ -50,9 +52,13 @@ app.post(
   subscriptionRoutes
 );
 
+// Initialize note vectorization service
+NoteVectorizationService.getInstance();
+
 // Routes
 app.use("/api/customers", customerRoutes);
 app.use("/api/subscriptions", subscriptionRoutes);
+app.use("/api/rag", ragRoutes);
 
 // Error handling
 app.use(errorHandler);

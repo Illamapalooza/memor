@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   StyleSheet,
@@ -9,17 +9,18 @@ import {
   Alert,
   Clipboard,
 } from "react-native";
-import { Text } from "@/components/ui/Text/Text";
-import { useAppTheme } from "@/hooks/useAppTheme";
+import { IconButton, TextInput, useTheme } from "react-native-paper";
+import { Text } from "../ui/Text/Text";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { OutlineButton, PrimaryButton } from "@/components/ui/Button";
-import { TextInput } from "react-native-paper";
 import { AudioRecorder } from "../ui/AudioRecorder/AudioRecorder";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { colors } from "@/utils/theme";
 import { useAuth } from "@/services/auth/AuthProvider";
 import { UsageService } from "@/services/usage/usage.service";
 import { PaywallGuard } from "@/components/core/PaywallGuard";
+import { useAIQuery } from "@/hooks/useAIQuery";
+import { IconButton as IconButtonUI } from "@/components/ui/Button";
 
 type Props = {
   visible: boolean;
@@ -33,37 +34,18 @@ const SUGGESTED_QUESTIONS = [
   "Analyze my writing style",
 ];
 
-const SIMULATED_RESPONSE = `I've analyzed your notes and found several interesting patterns:
-
-1. Meeting Notes:
-   - You have 5 meeting notes from the past week
-   - Most meetings are scheduled between 10 AM and 2 PM
-   - Common participants: Sarah, Mike, and Team Lead
-
-2. Task Patterns:
-   - 12 pending tasks identified
-   - Most tasks are related to project planning
-   - 3 high-priority items marked for this week
-
-3. Writing Style Analysis:
-   - Clear and concise documentation
-   - Technical terms frequently used
-   - Average note length: 250 words
-
-Would you like me to elaborate on any of these aspects or help you organize your tasks?`;
-
-export function AskAIModal({ visible, onClose }: Props) {
+export const AskAIModal = ({ visible, onClose }: Props) => {
+  const theme = useTheme();
   const { userProfile } = useAuth();
   const [query, setQuery] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const [response, setResponse] = useState<string | null>(null);
+  const [relevantNotes, setRelevantNotes] = useState<any[]>([]);
   const [showRecorder, setShowRecorder] = useState(false);
   const [streamedResponse, setStreamedResponse] = useState("");
-  const theme = useAppTheme();
+  const { queryAI, isLoading, error } = useAIQuery();
 
-  // Animation values
+  const modalTranslateY = React.useRef(new Animated.Value(1000)).current;
   const overlayOpacity = React.useRef(new Animated.Value(0)).current;
-  const modalTranslateY = React.useRef(new Animated.Value(300)).current;
 
   React.useEffect(() => {
     if (visible) {
@@ -96,7 +78,20 @@ export function AskAIModal({ visible, onClose }: Props) {
     }
   }, [visible]);
 
-  const simulateStreamingResponse = useCallback((fullResponse: string) => {
+  const handleSubmit = async () => {
+    if (!query.trim() || isLoading) return;
+
+    setStreamedResponse(""); // Reset streamed response
+    const result = await queryAI(query);
+
+    if (result) {
+      setResponse(result.answer);
+      setRelevantNotes(result.relevantNotes);
+      simulateStreamingResponse(result.answer);
+    }
+  };
+
+  const simulateStreamingResponse = (fullResponse: string) => {
     let index = 0;
     setStreamedResponse("");
 
@@ -106,48 +101,21 @@ export function AskAIModal({ visible, onClose }: Props) {
         index++;
       } else {
         clearInterval(interval);
-        setIsLoading(false);
       }
-    }, 20); // Adjust speed as needed
+    }, 30); // Slightly slower for better readability
 
     return () => clearInterval(interval);
-  }, []);
-
-  const handleAskAI = async () => {
-    if (!userProfile?.id) return;
-
-    try {
-      setIsLoading(true);
-
-      // Track usage before making the request
-      await UsageService.incrementUsage(userProfile.id, "aiQueries");
-
-      if (!query.trim()) return;
-
-      setResponse("streaming");
-      simulateStreamingResponse(SIMULATED_RESPONSE);
-    } catch (error) {
-      console.error("Error in AI query:", error);
-    } finally {
-      setIsLoading(false);
-    }
   };
 
   const handleReset = () => {
     setQuery("");
     setResponse(null);
+    setRelevantNotes([]);
     setStreamedResponse("");
-    setIsLoading(false);
-  };
-
-  const handleSuggestedQuestion = (question: string) => {
-    setQuery(question);
-    handleAskAI();
   };
 
   const handleAudioSave = async (uri: string) => {
     setShowRecorder(false);
-    setIsLoading(true);
     setQuery("Transcribed audio query...");
     setResponse("streaming");
     simulateStreamingResponse(
@@ -155,13 +123,10 @@ export function AskAIModal({ visible, onClose }: Props) {
     );
   };
 
-  const handleCopyResponse = async () => {
-    try {
-      await Clipboard.setString(streamedResponse);
+  const handleCopyResponse = () => {
+    if (response) {
+      Clipboard.setString(response);
       Alert.alert("Copied", "Response copied to clipboard");
-    } catch (error) {
-      console.error("Failed to copy response:", error);
-      Alert.alert("Error", "Failed to copy response");
     }
   };
 
@@ -199,10 +164,10 @@ export function AskAIModal({ visible, onClose }: Props) {
                 <Text variant="subtitle1">What can I help you with?</Text>
               </View>
               <View style={styles.headerButtons}>
-                {response && (
+                {(response || streamedResponse) && (
                   <Pressable onPress={handleReset} style={styles.resetButton}>
-                    <IconSymbol
-                      name="arrow.counterclockwise"
+                    <Ionicons
+                      name="refresh-outline"
                       size={24}
                       color={theme.colors.primary}
                     />
@@ -219,14 +184,17 @@ export function AskAIModal({ visible, onClose }: Props) {
             </View>
 
             <View style={styles.content}>
-              {!response && (
+              {!response && !isLoading && (
                 <View style={styles.suggestedQuestions}>
-                  <Text variant="subtitle2">Suggested Questions</Text>
+                  <Text variant="body">Try asking:</Text>
                   <View style={styles.questionsList}>
-                    {SUGGESTED_QUESTIONS.map((question, index) => (
+                    {SUGGESTED_QUESTIONS.map((question) => (
                       <OutlineButton
-                        key={index}
-                        onPress={() => handleSuggestedQuestion(question)}
+                        key={question}
+                        onPress={() => {
+                          setQuery(question);
+                          handleSubmit();
+                        }}
                         size="small"
                       >
                         {question}
@@ -236,60 +204,94 @@ export function AskAIModal({ visible, onClose }: Props) {
                 </View>
               )}
 
-              {response && (
+              {(streamedResponse || isLoading) && (
                 <ScrollView
                   style={styles.responseContainer}
                   contentContainerStyle={styles.responseContent}
                 >
                   <View style={styles.responseHeader}>
-                    <Text variant="caption" style={styles.responseLabel}>
+                    <Text variant="bodySmall" style={styles.responseLabel}>
                       Response
                     </Text>
-                    <Pressable
-                      onPress={handleCopyResponse}
-                      style={({ pressed }) => [
-                        styles.copyButton,
-                        { opacity: pressed ? 0.7 : 1 },
-                      ]}
-                    >
-                      <Ionicons
-                        name="copy-outline"
-                        size={16}
-                        color={colors.blackOlive[700]}
-                      />
-                    </Pressable>
+                    {streamedResponse && (
+                      <Pressable
+                        onPress={handleCopyResponse}
+                        style={styles.copyButton}
+                      >
+                        <Ionicons name="copy-outline" size={16} />
+                        <Text variant="bodySmall">Copy</Text>
+                      </Pressable>
+                    )}
                   </View>
-                  <Text variant="body">{streamedResponse}</Text>
-                  {isLoading && (
-                    <View style={styles.cursor}>
-                      <Text variant="body">|</Text>
+
+                  <Text variant="body">
+                    {streamedResponse}
+                    {isLoading && <Text style={{ opacity: 0.5 }}>|</Text>}
+                  </Text>
+
+                  {relevantNotes.length > 0 && streamedResponse && (
+                    <View style={styles.sourcesContainer}>
+                      <Text variant="subtitle2" style={styles.sourcesTitle}>
+                        Related Notes:
+                      </Text>
+                      {relevantNotes.map((note, index) => (
+                        <Text
+                          key={index}
+                          variant="bodySmall"
+                          style={styles.sourceText}
+                        >
+                          • {note.metadata.title}
+                        </Text>
+                      ))}
                     </View>
                   )}
                 </ScrollView>
               )}
 
+              {error && <Text style={styles.error}>{error}</Text>}
+
               <View style={styles.inputContainer}>
                 <TextInput
                   mode="outlined"
+                  placeholder="Ask anything about your notes..."
                   value={query}
                   onChangeText={setQuery}
-                  placeholder="Ask anything about your notes..."
+                  onSubmitEditing={handleSubmit}
                   multiline
+                  numberOfLines={3}
                   style={styles.input}
-                  right={
-                    <TextInput.Icon
-                      icon="microphone"
-                      onPress={() => setShowRecorder(true)}
-                    />
-                  }
                 />
-                <PrimaryButton
-                  onPress={handleAskAI}
-                  loading={isLoading}
-                  disabled={!query.trim() || isLoading}
-                >
-                  Ask
-                </PrimaryButton>
+                <View style={styles.buttonContainer}>
+                  <IconButtonUI
+                    onPress={handleReset}
+                    loading={isLoading}
+                    disabled={!query.trim() || isLoading}
+                    style={
+                      !query.trim() || isLoading
+                        ? styles.disabledIconButton
+                        : styles.iconButton
+                    }
+                  >
+                    <Ionicons
+                      name="refresh-outline"
+                      size={24}
+                      color={
+                        !query.trim() || isLoading
+                          ? theme.colors.onSurface
+                          : theme.colors.primary
+                      }
+                    />
+                  </IconButtonUI>
+
+                  <PrimaryButton
+                    onPress={handleSubmit}
+                    loading={isLoading}
+                    disabled={!query.trim() || isLoading}
+                    style={styles.askButton}
+                  >
+                    Ask
+                  </PrimaryButton>
+                </View>
               </View>
             </View>
           </Animated.View>
@@ -303,7 +305,7 @@ export function AskAIModal({ visible, onClose }: Props) {
       </Modal>
     </PaywallGuard>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -343,7 +345,8 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   resetButton: {
-    opacity: 0.8,
+    padding: 8,
+    marginRight: 8,
   },
   content: {
     flex: 1,
@@ -393,5 +396,45 @@ const styles = StyleSheet.create({
   },
   input: {
     backgroundColor: "transparent",
+  },
+  error: {
+    color: "red",
+    marginBottom: 16,
+  },
+  sourcesContainer: {
+    marginTop: 24,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: "rgba(0,0,0,0.1)",
+  },
+  sourcesTitle: {
+    marginBottom: 8,
+    opacity: 0.7,
+  },
+  sourceText: {
+    opacity: 0.6,
+    marginBottom: 4,
+  },
+  buttonContainer: {
+    flexDirection: "row",
+    gap: 8,
+    marginTop: 8,
+  },
+  resetQueryButton: {
+    flex: 1,
+  },
+  askButton: {
+    flex: 2,
+  },
+  iconButton: {
+    padding: 4,
+    borderWidth: 2,
+    borderColor: colors.jasper.DEFAULT,
+  },
+
+  disabledIconButton: {
+    opacity: 0.5,
+    borderColor: "gray",
+    borderWidth: 2,
   },
 });

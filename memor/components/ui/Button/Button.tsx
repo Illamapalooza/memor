@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, Pressable } from "react-native";
+import { StyleSheet, Pressable, View } from "react-native";
 import { Text, ActivityIndicator } from "react-native-paper";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { BaseButtonProps } from "./types";
@@ -357,8 +357,54 @@ export function DestructiveButton({
   );
 }
 
+export function IconButton({
+  children,
+  disabled,
+  loading,
+  style,
+  textStyle,
+  size,
+  fullWidth,
+  ...props
+}: BaseButtonProps) {
+  const theme = useAppTheme();
+  const sizeStyles = getSizeStyles(size);
+
+  return (
+    <Pressable
+      disabled={disabled || loading}
+      style={({ pressed }) => [
+        styles.button,
+        {
+          opacity: pressed ? 0.8 : 1,
+          paddingVertical: sizeStyles.paddingVertical,
+          paddingHorizontal: sizeStyles.paddingHorizontal,
+          width: fullWidth ? "100%" : "auto",
+        },
+        style,
+      ]}
+      {...props}
+    >
+      {loading ? (
+        <ActivityIndicator
+          color={theme.colors.primary}
+          size={sizeStyles.fontSize}
+        />
+      ) : (
+        <View style={styles.iconButton}>{children}</View>
+      )}
+    </Pressable>
+  );
+}
+
 const styles = StyleSheet.create({
   button: {
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+  },
+  iconButton: {
     borderRadius: 8,
     alignItems: "center",
     justifyContent: "center",

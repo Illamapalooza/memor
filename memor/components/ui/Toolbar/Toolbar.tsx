@@ -10,6 +10,7 @@ import { colors } from "@/utils/theme";
 import { AudioRecorder } from "../AudioRecorder/AudioRecorder";
 import { AskAIModal } from "@/components/ai/AskAIModal";
 import { usePaywall } from "@/contexts/PaywallContext";
+import { IconButton } from "react-native-paper";
 
 export function Toolbar() {
   const [showRecorder, setShowRecorder] = useState(false);
