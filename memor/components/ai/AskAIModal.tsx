@@ -9,7 +9,7 @@ import {
   Alert,
   Clipboard,
 } from "react-native";
-import { IconButton, TextInput, useTheme } from "react-native-paper";
+import { TextInput, useTheme } from "react-native-paper";
 import { Text } from "../ui/Text/Text";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { OutlineButton, PrimaryButton } from "@/components/ui/Button";
@@ -20,7 +20,6 @@ import { useAuth } from "@/services/auth/AuthProvider";
 import { UsageService } from "@/services/usage/usage.service";
 import { PaywallGuard } from "@/components/core/PaywallGuard";
 import { useAIQuery } from "@/hooks/useAIQuery";
-import { IconButton as IconButtonUI } from "@/components/ui/Button";
 
 type Props = {
   visible: boolean;
@@ -164,10 +163,10 @@ export const AskAIModal = ({ visible, onClose }: Props) => {
                 <Text variant="subtitle1">What can I help you with?</Text>
               </View>
               <View style={styles.headerButtons}>
-                {(response || streamedResponse) && (
+                {response && (
                   <Pressable onPress={handleReset} style={styles.resetButton}>
-                    <Ionicons
-                      name="refresh-outline"
+                    <IconSymbol
+                      name="arrow.counterclockwise"
                       size={24}
                       color={theme.colors.primary}
                     />
@@ -261,37 +260,13 @@ export const AskAIModal = ({ visible, onClose }: Props) => {
                   numberOfLines={3}
                   style={styles.input}
                 />
-                <View style={styles.buttonContainer}>
-                  <IconButtonUI
-                    onPress={handleReset}
-                    loading={isLoading}
-                    disabled={!query.trim() || isLoading}
-                    style={
-                      !query.trim() || isLoading
-                        ? styles.disabledIconButton
-                        : styles.iconButton
-                    }
-                  >
-                    <Ionicons
-                      name="refresh-outline"
-                      size={24}
-                      color={
-                        !query.trim() || isLoading
-                          ? theme.colors.onSurface
-                          : theme.colors.primary
-                      }
-                    />
-                  </IconButtonUI>
-
-                  <PrimaryButton
-                    onPress={handleSubmit}
-                    loading={isLoading}
-                    disabled={!query.trim() || isLoading}
-                    style={styles.askButton}
-                  >
-                    Ask
-                  </PrimaryButton>
-                </View>
+                <PrimaryButton
+                  onPress={handleSubmit}
+                  loading={isLoading}
+                  disabled={!query.trim() || isLoading}
+                >
+                  Ask
+                </PrimaryButton>
               </View>
             </View>
           </Animated.View>
@@ -345,8 +320,7 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   resetButton: {
-    padding: 8,
-    marginRight: 8,
+    opacity: 0.8,
   },
   content: {
     flex: 1,
@@ -414,27 +388,5 @@ const styles = StyleSheet.create({
   sourceText: {
     opacity: 0.6,
     marginBottom: 4,
-  },
-  buttonContainer: {
-    flexDirection: "row",
-    gap: 8,
-    marginTop: 8,
-  },
-  resetQueryButton: {
-    flex: 1,
-  },
-  askButton: {
-    flex: 2,
-  },
-  iconButton: {
-    padding: 4,
-    borderWidth: 2,
-    borderColor: colors.jasper.DEFAULT,
-  },
-
-  disabledIconButton: {
-    opacity: 0.5,
-    borderColor: "gray",
-    borderWidth: 2,
   },
 });

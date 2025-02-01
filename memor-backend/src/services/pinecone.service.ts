@@ -3,6 +3,7 @@ import { OpenAIEmbeddings } from "@langchain/openai";
 import { PineconeStore } from "@langchain/pinecone";
 import { Document } from "langchain/document";
 import dotenv from "dotenv";
+import { logger } from "../utils/logger";
 
 dotenv.config();
 
@@ -39,7 +40,7 @@ export class PineconeService {
     return PineconeService.instance;
   }
 
-  async initVectorStore() {
+  private async initVectorStore() {
     if (!this.vectorStore) {
       const index = this.pinecone.Index(this.indexName);
       this.vectorStore = await PineconeStore.fromExistingIndex(
@@ -84,7 +85,30 @@ export class PineconeService {
   }
 
   async deleteDocumentsByMetadata(filter: Record<string, any>) {
-    const index = this.pinecone.Index(this.indexName);
-    await index.deleteMany({ noteId: filter.noteId });
+    try {
+      const index = this.pinecone.Index(this.indexName);
+
+      // First, find vectors matching the filter
+      const queryResponse = await index.query({
+        vector: new Array(1536).fill(0), // Dummy vector for metadata-only query
+        filter: filter,
+        topK: 100, // Adjust based on your needs
+        includeMetadata: true,
+      });
+
+      if (queryResponse.matches && queryResponse.matches.length > 0) {
+        // Get all IDs that match the filter
+        const ids = queryResponse.matches.map((match) => match.id);
+
+        // Delete vectors by IDs
+        await index.deleteMany(ids);
+        logger.info(`Deleted ${ids.length} vectors with filter:`, filter);
+      } else {
+        logger.info("No vectors found matching filter:", filter);
+      }
+    } catch (error) {
+      logger.error("Error deleting vectors:", error);
+      throw error;
+    }
   }
 }
