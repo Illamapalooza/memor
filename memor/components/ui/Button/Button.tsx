@@ -3,6 +3,7 @@ import { StyleSheet, Pressable, View } from "react-native";
 import { Text, ActivityIndicator } from "react-native-paper";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { BaseButtonProps } from "./types";
+import { Ionicons } from "@expo/vector-icons";
 
 const getSizeStyles = (size: BaseButtonProps["size"] = "medium") => {
   switch (size) {
@@ -160,9 +161,6 @@ export function GhostButton({
       style={({ pressed }) => [
         styles.button,
         {
-          backgroundColor: pressed
-            ? theme.colors.surfaceVariant
-            : "transparent",
           paddingVertical: sizeStyles.paddingVertical,
           paddingHorizontal: sizeStyles.paddingHorizontal,
           width: fullWidth ? "100%" : "auto",
@@ -365,8 +363,17 @@ export function IconButton({
   textStyle,
   size,
   fullWidth,
+  icon,
+  iconColor,
+  iconSize,
+  iconColorDisabled,
   ...props
-}: BaseButtonProps) {
+}: BaseButtonProps & {
+  icon?: typeof Ionicons.defaultProps.name;
+  iconColor?: string;
+  iconSize?: number;
+  iconColorDisabled?: string;
+}) {
   const theme = useAppTheme();
   const sizeStyles = getSizeStyles(size);
 
@@ -380,6 +387,7 @@ export function IconButton({
           paddingVertical: sizeStyles.paddingVertical,
           paddingHorizontal: sizeStyles.paddingHorizontal,
           width: fullWidth ? "100%" : "auto",
+          backgroundColor: theme.colors.surface,
         },
         style,
       ]}
@@ -391,7 +399,20 @@ export function IconButton({
           size={sizeStyles.fontSize}
         />
       ) : (
-        <View style={styles.iconButton}>{children}</View>
+        <View style={styles.iconButton}>
+          {icon && (
+            <Ionicons
+              name={icon}
+              size={iconSize || sizeStyles.fontSize}
+              color={
+                disabled
+                  ? iconColorDisabled || theme.colors.onSurfaceDisabled
+                  : iconColor || theme.colors.primary
+              }
+            />
+          )}
+          {children}
+        </View>
       )}
     </Pressable>
   );

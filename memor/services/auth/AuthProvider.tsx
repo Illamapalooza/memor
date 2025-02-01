@@ -2,10 +2,9 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { auth } from "@/services/db/firebase";
 import { db } from "@/services/db/firebase";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { UserProfile } from "@/utils/types/db";
 import { subscriptionService } from "@/services/subscription/subscription.service";
-import { updateDoc } from "firebase/firestore";
 import { UserOnboarding } from "@/utils/types/db";
 
 type AuthContextType = {
@@ -15,6 +14,7 @@ type AuthContextType = {
   error: Error | null;
   isEmailVerified: boolean;
   resetPasswordEmail: string | null;
+  updateUserProfile: (updates: Partial<UserProfile>) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType>({
@@ -24,6 +24,7 @@ const AuthContext = createContext<AuthContextType>({
   error: null,
   isEmailVerified: false,
   resetPasswordEmail: null,
+  updateUserProfile: async () => {},
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -117,6 +118,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => unsubscribe();
   }, []);
 
+  const updateUserProfile = async (updates: Partial<UserProfile>) => {
+    if (!user) throw new Error("No user logged in");
+
+    try {
+      const userRef = doc(db, "users", user.uid);
+      await updateDoc(userRef, updates);
+
+      // Update local state
+      setUserProfile((prev) => (prev ? { ...prev, ...updates } : null));
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      throw error;
+    }
+  };
+
   const contextValue = {
     user,
     userProfile,
@@ -124,6 +140,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     error,
     isEmailVerified,
     resetPasswordEmail,
+    updateUserProfile,
   };
 
   return (

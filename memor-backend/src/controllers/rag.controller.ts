@@ -8,6 +8,17 @@ import { auth } from "../services/firebase.service";
 
 export class RAGController {
   static async queryNotes(req: Request, res: Response) {
+    // Set up response headers for potential cancellation
+    res.setHeader("Connection", "keep-alive");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Content-Type", "application/json");
+
+    // Handle client disconnection
+    req.on("close", () => {
+      logger.info("Client closed connection");
+      // Any cleanup needed
+    });
+
     try {
       const { query } = req.body;
       const authHeader = req.headers.authorization;
@@ -54,13 +65,16 @@ export class RAGController {
 
       console.log("response", response);
 
-      res.json({
-        answer: response.content,
-        relevantNotes: relevantDocs.map((doc) => ({
-          content: doc.pageContent,
-          metadata: doc.metadata,
-        })),
-      });
+      // Check if client is still connected before sending response
+      if (!res.writableEnded) {
+        res.json({
+          answer: response.content,
+          relevantNotes: relevantDocs.map((doc) => ({
+            content: doc.pageContent,
+            metadata: doc.metadata,
+          })),
+        });
+      }
     } catch (error) {
       logger.error("Error in RAG query:", error);
       throw new AppError(500, "Error processing RAG query");

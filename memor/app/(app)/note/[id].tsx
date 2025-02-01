@@ -23,6 +23,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { useAutoSave } from "@/features/notes/hooks/useAutoSave";
 import { colors } from "@/utils/theme";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 export default function EditNoteScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -96,8 +97,8 @@ export default function EditNoteScreen() {
       >
         <View style={[styles.header]}>
           <Pressable onPress={handleBack} style={styles.backButton}>
-            <IconSymbol
-              name="chevron.left"
+            <Ionicons
+              name="chevron-back-outline"
               size={20}
               color={theme.colors.onSurfaceVariant}
             />
@@ -184,6 +185,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 8,
+    paddingTop: 8,
   },
   title: {
     fontFamily: "Nunito-Bold",

@@ -107,8 +107,6 @@ export class UsageService {
       ...profile.usageLimits,
     };
 
-    console.log("usageLimits", usageLimits);
-
     return (
       usageLimits.aiQueriesUsed >= limits.aiQueriesPerDay ||
       usageLimits.audioRecordingsUsed >= limits.audioRecordingsPerDay ||

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   StyleSheet,
@@ -20,6 +20,7 @@ import { useAuth } from "@/services/auth/AuthProvider";
 import { UsageService } from "@/services/usage/usage.service";
 import { PaywallGuard } from "@/components/core/PaywallGuard";
 import { useAIQuery } from "@/hooks/useAIQuery";
+import { IconButton } from "@/components/ui/Button/Button";
 
 type Props = {
   visible: boolean;
@@ -41,7 +42,9 @@ export const AskAIModal = ({ visible, onClose }: Props) => {
   const [relevantNotes, setRelevantNotes] = useState<any[]>([]);
   const [showRecorder, setShowRecorder] = useState(false);
   const [streamedResponse, setStreamedResponse] = useState("");
-  const { queryAI, isLoading, error } = useAIQuery();
+  const { queryAI, isLoading, error, cancelQuery } = useAIQuery();
+  const [streamController, setStreamController] =
+    useState<AbortController | null>(null);
 
   const modalTranslateY = React.useRef(new Animated.Value(1000)).current;
   const overlayOpacity = React.useRef(new Animated.Value(0)).current;
@@ -90,27 +93,46 @@ export const AskAIModal = ({ visible, onClose }: Props) => {
     }
   };
 
+  const handleReset = useCallback(() => {
+    if (isLoading) {
+      // Cancel ongoing request
+      cancelQuery();
+      // Cancel streaming if active
+      streamController?.abort();
+      setStreamController(null);
+    }
+    // Reset all states
+    setQuery("");
+    setResponse(null);
+    setStreamedResponse("");
+    setRelevantNotes([]);
+  }, [isLoading, cancelQuery, streamController]);
+
   const simulateStreamingResponse = (fullResponse: string) => {
+    const controller = new AbortController();
+    setStreamController(controller);
     let index = 0;
     setStreamedResponse("");
 
     const interval = setInterval(() => {
+      if (controller.signal.aborted) {
+        clearInterval(interval);
+        return;
+      }
+
       if (index < fullResponse.length) {
         setStreamedResponse((prev) => prev + fullResponse[index]);
         index++;
       } else {
         clearInterval(interval);
+        setStreamController(null);
       }
-    }, 30); // Slightly slower for better readability
+    }, 30);
 
-    return () => clearInterval(interval);
-  };
-
-  const handleReset = () => {
-    setQuery("");
-    setResponse(null);
-    setRelevantNotes([]);
-    setStreamedResponse("");
+    return () => {
+      controller.abort();
+      clearInterval(interval);
+    };
   };
 
   const handleAudioSave = async (uri: string) => {
@@ -247,12 +269,13 @@ export const AskAIModal = ({ visible, onClose }: Props) => {
                 </ScrollView>
               )}
 
-              {error && <Text style={styles.error}>{error}</Text>}
+              {/* {error && <Text style={styles.error}>{error}</Text>} */}
 
               <View style={styles.inputContainer}>
                 <TextInput
                   mode="outlined"
                   placeholder="Ask anything about your notes..."
+                  placeholderTextColor={theme.colors.onSurfaceDisabled}
                   value={query}
                   onChangeText={setQuery}
                   onSubmitEditing={handleSubmit}
@@ -260,13 +283,28 @@ export const AskAIModal = ({ visible, onClose }: Props) => {
                   numberOfLines={3}
                   style={styles.input}
                 />
-                <PrimaryButton
-                  onPress={handleSubmit}
-                  loading={isLoading}
-                  disabled={!query.trim() || isLoading}
-                >
-                  Ask
-                </PrimaryButton>
+                <View style={styles.buttonContainer}>
+                  <PrimaryButton
+                    onPress={handleSubmit}
+                    loading={isLoading}
+                    disabled={!query.trim() || isLoading}
+                    style={styles.askButton}
+                  >
+                    Ask
+                  </PrimaryButton>
+                  <IconButton
+                    size="medium"
+                    icon={
+                      isLoading || query.trim() ? "close" : "refresh-outline"
+                    }
+                    onPress={handleReset}
+                    disabled={!query.trim()}
+                    iconSize={24}
+                    style={styles.resetButton}
+                    iconColor={theme.colors.primary}
+                    iconColorDisabled={theme.colors.onSurfaceDisabled}
+                  />
+                </View>
               </View>
             </View>
           </Animated.View>
@@ -301,7 +339,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 24,
-    maxHeight: "90%",
+    maxHeight: "95%",
   },
   header: {
     flexDirection: "row",
@@ -320,7 +358,8 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   resetButton: {
-    opacity: 0.8,
+    padding: 8,
+    width: "15%",
   },
   content: {
     flex: 1,
@@ -370,6 +409,7 @@ const styles = StyleSheet.create({
   },
   input: {
     backgroundColor: "transparent",
+    paddingVertical: 12,
   },
   error: {
     color: "red",
@@ -388,5 +428,14 @@ const styles = StyleSheet.create({
   sourceText: {
     opacity: 0.6,
     marginBottom: 4,
+  },
+  buttonContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    width: "100%",
+  },
+  askButton: {
+    width: "85%",
   },
 });

@@ -2,7 +2,7 @@ import { PressableProps, StyleProp, ViewStyle, TextStyle } from "react-native";
 import { ReactNode } from "react";
 
 export type BaseButtonProps = PressableProps & {
-  children: string | ReactNode;
+  children?: string | ReactNode;
   loading?: boolean;
   disabled?: boolean;
   fullWidth?: boolean;

@@ -26,6 +26,8 @@ import { colors } from "@/utils/theme";
 import { PaywallGuard } from "@/components/core/PaywallGuard";
 import { useAuth } from "@/services/auth/AuthProvider";
 import { UsageService } from "@/services/usage/usage.service";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function CreateNoteScreen() {
   const [title, setTitle] = useState("");
@@ -173,45 +175,47 @@ function CreateNoteContent({
 
   return (
     <>
-      <View style={[styles.header]}>
-        <Pressable onPress={handleBack} style={styles.backButton}>
-          <IconSymbol
-            name="chevron.left"
-            size={20}
-            color={theme.colors.onSurfaceVariant}
-          />
-        </Pressable>
-        <Text variant="subtitle2" style={styles.title}>
-          New Note
-        </Text>
-        <GhostButton
-          onPress={handleSave}
-          loading={isLoading || isSaving}
-          disabled={!title.trim() || !content.trim() || isSaving}
-          size="large"
-          style={styles.saveButton}
-        >
-          {isSaving ? "Saving..." : "Save"}
-        </GhostButton>
-      </View>
+      <SafeAreaView style={{ flex: 1 }}>
+        <View style={[styles.header]}>
+          <Pressable onPress={handleBack} style={styles.backButton}>
+            <Ionicons
+              name="chevron-back-outline"
+              size={20}
+              color={theme.colors.onSurfaceVariant}
+            />
+          </Pressable>
+          <Text variant="subtitle2" style={styles.title}>
+            New Note
+          </Text>
+          <GhostButton
+            onPress={handleSave}
+            loading={isLoading || isSaving}
+            disabled={!title.trim() || !content.trim() || isSaving}
+            size="large"
+            style={styles.saveButton}
+          >
+            {isSaving ? "Saving..." : "Save"}
+          </GhostButton>
+        </View>
 
-      <View style={styles.content}>
-        <TextInput
-          placeholder="Title"
-          value={title}
-          onChangeText={setTitle}
-          style={styles.titleInput}
-          placeholderTextColor={theme.colors.onSurfaceVariant}
-        />
-        <TextInput
-          placeholder="Start writing..."
-          value={content}
-          onChangeText={setContent}
-          multiline
-          style={styles.contentInput}
-          placeholderTextColor={theme.colors.onSurfaceVariant}
-        />
-      </View>
+        <View style={styles.content}>
+          <TextInput
+            placeholder="Title"
+            value={title}
+            onChangeText={setTitle}
+            style={styles.titleInput}
+            placeholderTextColor={colors.blackOlive[800]}
+          />
+          <TextInput
+            placeholder="Start writing..."
+            value={content}
+            onChangeText={setContent}
+            multiline
+            style={styles.contentInput}
+            placeholderTextColor={colors.blackOlive[600]}
+          />
+        </View>
+      </SafeAreaView>
     </>
   );
 }

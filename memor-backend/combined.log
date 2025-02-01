@@ -275,3 +275,14 @@
 {"level":"info","message":"Vectorized/Updated note: SdkrjU9eAsU82n4yDcUe","timestamp":"2025-02-01T12:29:38.871Z"}
 {"level":"info","message":"No vectors found matching filter:","noteId":"SdkrjU9eAsU82n4yDcUe","timestamp":"2025-02-01T12:29:48.927Z"}
 {"level":"info","message":"Deleted vectors for note: SdkrjU9eAsU82n4yDcUe","timestamp":"2025-02-01T12:29:48.928Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-01T14:08:09.187Z"}
+{"level":"info","message":"Vectorized/Updated note: Y6scJIwP0MmAaGRl79ta","timestamp":"2025-02-01T15:40:27.696Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-01T15:51:21.771Z"}
+{"level":"info","message":"Deleted 1 vectors with filter:","noteId":"Y6scJIwP0MmAaGRl79ta","timestamp":"2025-02-01T15:51:28.476Z"}
+{"level":"info","message":"Vectorized/Updated note: Y6scJIwP0MmAaGRl79ta","timestamp":"2025-02-01T15:51:30.494Z"}
+{"level":"info","message":"Client closed connection","timestamp":"2025-02-01T16:02:33.854Z"}
+{"level":"info","message":"Client closed connection","timestamp":"2025-02-01T16:09:11.699Z"}
+{"level":"info","message":"Deleted 1 vectors with filter:","noteId":"Y6scJIwP0MmAaGRl79ta","timestamp":"2025-02-01T17:55:46.995Z"}
+{"level":"info","message":"Vectorized/Updated note: Y6scJIwP0MmAaGRl79ta","timestamp":"2025-02-01T17:55:48.696Z"}
+{"level":"info","message":"Deleted 1 vectors with filter:","noteId":"Y6scJIwP0MmAaGRl79ta","timestamp":"2025-02-01T17:56:49.447Z"}
+{"level":"info","message":"Vectorized/Updated note: Y6scJIwP0MmAaGRl79ta","timestamp":"2025-02-01T17:56:50.781Z"}
