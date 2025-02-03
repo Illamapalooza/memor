@@ -27,9 +27,16 @@ import * as FileSystem from "expo-file-system";
 type Props = {
   visible: boolean;
   onClose: () => void;
+  onTranscribed?: (result: { title?: string; content: string }) => void;
+  mode?: "note" | "query";
 };
 
-export function AudioRecorder({ visible, onClose }: Props) {
+export function AudioRecorder({
+  visible,
+  onClose,
+  onTranscribed,
+  mode = "note",
+}: Props) {
   const [recording, setRecording] = useState<Audio.Recording>();
   const [permissionResponse, requestPermission] = Audio.usePermissions();
   const [isRecording, setIsRecording] = useState(false);
@@ -113,15 +120,7 @@ export function AudioRecorder({ visible, onClose }: Props) {
         throw new Error("Recording file not found");
       }
 
-      // Create form data
-      const formData = new FormData();
-      formData.append("audio", {
-        uri: Platform.OS === "ios" ? uri.replace("file://", "") : uri,
-        type: "audio/m4a",
-        name: "recording.m4a",
-      } as any);
-
-      // Upload using FileSystem to handle large files
+      // Upload using FileSystem
       const response = await FileSystem.uploadAsync(
         `${API_URL}/transcription`,
         uri,
@@ -129,6 +128,9 @@ export function AudioRecorder({ visible, onClose }: Props) {
           uploadType: FileSystem.FileSystemUploadType.MULTIPART,
           fieldName: "audio",
           mimeType: "audio/m4a",
+          parameters: {
+            mode,
+          },
           headers: {
             "Content-Type": "multipart/form-data",
           },
@@ -141,14 +143,18 @@ export function AudioRecorder({ visible, onClose }: Props) {
         throw new Error(result.message || "Failed to transcribe audio");
       }
 
-      // Navigate to create screen with transcribed content
-      router.push({
-        pathname: "/create",
-        params: {
-          title: result.title,
-          content: result.content,
-        },
-      });
+      if (onTranscribed) {
+        await onTranscribed(result);
+      } else {
+        // Default note creation behavior
+        router.push({
+          pathname: "/create",
+          params: {
+            title: result.title,
+            content: result.content,
+          },
+        });
+      }
 
       onClose();
     } catch (error) {
@@ -160,6 +166,11 @@ export function AudioRecorder({ visible, onClose }: Props) {
     } finally {
       setIsTranscribing(false);
     }
+  };
+
+  // Update modal title based on mode
+  const getModalTitle = () => {
+    return mode === "query" ? "Voice Query" : "Record Audio Note";
   };
 
   async function startRecording() {
@@ -340,7 +351,7 @@ export function AudioRecorder({ visible, onClose }: Props) {
             ]}
           >
             <View style={styles.header}>
-              <Text variant="h3">Record Audio Note</Text>
+              <Text variant="h3">{getModalTitle()}</Text>
               <Pressable onPress={handleClose}>
                 <IconSymbol
                   name="xmark"

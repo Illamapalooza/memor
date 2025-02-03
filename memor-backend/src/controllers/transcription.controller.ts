@@ -10,7 +10,8 @@ export class TranscriptionController {
         throw new AppError(400, "No audio file provided");
       }
 
-      const result = await TranscriptionService.transcribeAudio(req.file);
+      const mode = (req.body.mode || "note") as "note" | "query";
+      const result = await TranscriptionService.transcribeAudio(req.file, mode);
       res.json(result);
     } catch (error) {
       logger.error("Error in transcribeAudio:", error);

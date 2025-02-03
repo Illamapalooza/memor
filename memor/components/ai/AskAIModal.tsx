@@ -45,6 +45,7 @@ export const AskAIModal = ({ visible, onClose }: Props) => {
   const { queryAI, isLoading, error, cancelQuery } = useAIQuery();
   const [streamController, setStreamController] =
     useState<AbortController | null>(null);
+  const [isProcessingAudio, setIsProcessingAudio] = useState(false);
 
   const modalTranslateY = React.useRef(new Animated.Value(1000)).current;
   const overlayOpacity = React.useRef(new Animated.Value(0)).current;
@@ -151,9 +152,69 @@ export const AskAIModal = ({ visible, onClose }: Props) => {
     }
   };
 
+  const handleAudioTranscribed = async (transcription: { content: string }) => {
+    try {
+      setIsProcessingAudio(true);
+      setShowRecorder(false);
+      setQuery(transcription.content);
+
+      // Automatically trigger the RAG query with transcribed content
+      const result = await queryAI(transcription.content);
+
+      if (result) {
+        setResponse(result.answer);
+        setRelevantNotes(result.relevantNotes);
+        simulateStreamingResponse(result.answer);
+      }
+    } catch (error) {
+      console.error("Error processing audio query:", error);
+      Alert.alert("Error", "Failed to process audio query");
+    } finally {
+      setIsProcessingAudio(false);
+    }
+  };
+
+  const renderInputSection = () => (
+    <View style={styles.inputContainer}>
+      <TextInput
+        value={query}
+        onChangeText={setQuery}
+        placeholder="Ask anything about your notes..."
+        multiline
+        style={[styles.input, { backgroundColor: theme.colors.background }]}
+      />
+      <View style={styles.buttonContainer}>
+        <IconButton
+          icon="mic-outline"
+          size="small"
+          iconSize={24}
+          style={{
+            borderWidth: 2,
+            width: "15%",
+            borderColor: theme.colors.primary,
+          }}
+          onPress={() => setShowRecorder(true)}
+        />
+        <PrimaryButton
+          onPress={handleSubmit}
+          loading={isLoading || isProcessingAudio}
+          style={styles.askButton}
+          disabled={!query.trim() || isLoading || isProcessingAudio}
+        >
+          Ask AI
+        </PrimaryButton>
+      </View>
+    </View>
+  );
+
   return (
     <PaywallGuard feature="aiQueries">
-      <Modal visible={visible} transparent animationType="none">
+      <Modal
+        visible={visible}
+        onRequestClose={onClose}
+        animationType="none"
+        transparent
+      >
         <View style={styles.container}>
           <Animated.View
             style={[
@@ -271,41 +332,7 @@ export const AskAIModal = ({ visible, onClose }: Props) => {
 
               {/* {error && <Text style={styles.error}>{error}</Text>} */}
 
-              <View style={styles.inputContainer}>
-                <TextInput
-                  mode="outlined"
-                  placeholder="Ask anything about your notes..."
-                  placeholderTextColor={theme.colors.onSurfaceDisabled}
-                  value={query}
-                  onChangeText={setQuery}
-                  onSubmitEditing={handleSubmit}
-                  multiline
-                  numberOfLines={3}
-                  style={styles.input}
-                />
-                <View style={styles.buttonContainer}>
-                  <PrimaryButton
-                    onPress={handleSubmit}
-                    loading={isLoading}
-                    disabled={!query.trim() || isLoading}
-                    style={styles.askButton}
-                  >
-                    Ask
-                  </PrimaryButton>
-                  <IconButton
-                    size="medium"
-                    icon={
-                      isLoading || query.trim() ? "close" : "refresh-outline"
-                    }
-                    onPress={handleReset}
-                    disabled={!query.trim()}
-                    iconSize={24}
-                    style={styles.resetButton}
-                    iconColor={theme.colors.primary}
-                    iconColorDisabled={theme.colors.onSurfaceDisabled}
-                  />
-                </View>
-              </View>
+              {renderInputSection()}
             </View>
           </Animated.View>
         </View>
@@ -313,6 +340,8 @@ export const AskAIModal = ({ visible, onClose }: Props) => {
         <AudioRecorder
           visible={showRecorder}
           onClose={() => setShowRecorder(false)}
+          onTranscribed={handleAudioTranscribed}
+          mode="query"
         />
       </Modal>
     </PaywallGuard>
@@ -344,7 +373,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 24,
+    marginBottom: 12,
+    width: "100%",
   },
   headerLeft: {
     flexDirection: "row",
@@ -354,7 +384,8 @@ const styles = StyleSheet.create({
   headerButtons: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 16,
+    gap: 24,
+    justifyContent: "center",
   },
   resetButton: {
     padding: 8,

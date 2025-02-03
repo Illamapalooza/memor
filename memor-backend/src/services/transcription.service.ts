@@ -10,6 +10,8 @@ import { mkdir } from "fs/promises";
 const writeFile = promisify(fs.writeFile);
 const unlink = promisify(fs.unlink);
 
+type TranscriptionMode = "note" | "query";
+
 export class TranscriptionService {
   private static openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
@@ -28,12 +30,11 @@ export class TranscriptionService {
   }
 
   static async transcribeAudio(
-    file: Express.Multer.File
-  ): Promise<{ title: string; content: string }> {
+    file: Express.Multer.File,
+    mode: TranscriptionMode = "note"
+  ): Promise<{ title?: string; content: string }> {
     const tempDir = await this.ensureTempDir();
     const tempFilePath = path.join(tempDir, `${uuidv4()}-${file.originalname}`);
-
-    console.log(tempFilePath);
 
     try {
       // Save uploaded file
@@ -46,13 +47,41 @@ export class TranscriptionService {
         language: "en",
       });
 
-      console.log(transcription.text);
-
       if (!transcription.text) {
         throw new AppError(500, "No transcription generated");
       }
 
-      // Clean and organize transcription using GPT
+      // Different processing based on mode
+      if (mode === "query") {
+        const completion = await this.openai.chat.completions.create({
+          model: "gpt-4",
+          messages: [
+            {
+              role: "system",
+              content: `Convert this transcribed audio into a clear, concise question for querying a note database.
+              Your task is to:
+              1. Remove filler words and speech artifacts
+              2. Make the question more formal and precise
+              3. Ensure the question is focused on retrieving relevant information
+              4. Maintain the core intent of the original query`,
+            },
+            {
+              role: "user",
+              content: transcription.text,
+            },
+          ],
+        });
+
+        if (!completion.choices[0].message.content) {
+          throw new AppError(500, "Failed to process transcription");
+        }
+
+        return {
+          content: completion.choices[0].message.content.trim(),
+        };
+      }
+
+      // Original note processing
       const completion = await this.openai.chat.completions.create({
         model: "gpt-4",
         messages: [
@@ -76,8 +105,6 @@ export class TranscriptionService {
       if (!completion.choices[0].message.content) {
         throw new AppError(500, "Failed to process transcription");
       }
-
-      console.log(completion.choices[0].message.content);
 
       const result = JSON.parse(completion.choices[0].message.content);
 
