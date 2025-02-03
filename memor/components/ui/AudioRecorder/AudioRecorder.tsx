@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { View, StyleSheet, Modal, Pressable, Animated } from "react-native";
+import {
+  View,
+  StyleSheet,
+  Modal,
+  Pressable,
+  Animated,
+  Alert,
+  Platform,
+} from "react-native";
 import { Audio } from "expo-av";
 import { Text } from "@/components/ui/Text/Text";
 import { useAppTheme } from "@/hooks/useAppTheme";
@@ -11,14 +19,17 @@ import { AudioPlayer } from "./AudioPlayer";
 import { useAuth } from "@/services/auth/AuthProvider";
 import { UsageService } from "@/services/usage/usage.service";
 import { PaywallGuard } from "@/components/core/PaywallGuard";
+import { router } from "expo-router";
+import axios from "axios";
+import { API_URL } from "@/utils/config";
+import * as FileSystem from "expo-file-system";
 
 type Props = {
   visible: boolean;
   onClose: () => void;
-  onSave: (uri: string) => void;
 };
 
-export function AudioRecorder({ visible, onClose, onSave }: Props) {
+export function AudioRecorder({ visible, onClose }: Props) {
   const [recording, setRecording] = useState<Audio.Recording>();
   const [permissionResponse, requestPermission] = Audio.usePermissions();
   const [isRecording, setIsRecording] = useState(false);
@@ -26,6 +37,7 @@ export function AudioRecorder({ visible, onClose, onSave }: Props) {
   const [duration, setDuration] = useState(0);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [recordingUri, setRecordingUri] = useState<string | null>(null);
+  const [isTranscribing, setIsTranscribing] = useState(false);
   const theme = useAppTheme();
   const { userProfile } = useAuth();
 
@@ -91,34 +103,83 @@ export function AudioRecorder({ visible, onClose, onSave }: Props) {
     onClose();
   };
 
-  const handleSave = async () => {
-    if (!userProfile?.id) return;
+  const handleTranscribe = async (uri: string) => {
+    try {
+      setIsTranscribing(true);
 
-    if (recordingUri) {
-      try {
-        // Track usage before saving
-        await UsageService.incrementUsage(userProfile?.id, "audioRecordings");
-
-        await onSave(recordingUri);
-      } catch (error) {
-        console.error("Error saving recording:", error);
+      // Get file info
+      const fileInfo = await FileSystem.getInfoAsync(uri);
+      if (!fileInfo.exists) {
+        throw new Error("Recording file not found");
       }
+
+      // Create form data
+      const formData = new FormData();
+      formData.append("audio", {
+        uri: Platform.OS === "ios" ? uri.replace("file://", "") : uri,
+        type: "audio/m4a",
+        name: "recording.m4a",
+      } as any);
+
+      // Upload using FileSystem to handle large files
+      const response = await FileSystem.uploadAsync(
+        `${API_URL}/transcription`,
+        uri,
+        {
+          uploadType: FileSystem.FileSystemUploadType.MULTIPART,
+          fieldName: "audio",
+          mimeType: "audio/m4a",
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      const result = JSON.parse(response.body);
+
+      if (response.status !== 200) {
+        throw new Error(result.message || "Failed to transcribe audio");
+      }
+
+      // Navigate to create screen with transcribed content
+      router.push({
+        pathname: "/create",
+        params: {
+          title: result.title,
+          content: result.content,
+        },
+      });
+
+      onClose();
+    } catch (error) {
+      console.error("Failed to transcribe audio:", error);
+      Alert.alert(
+        "Error",
+        error instanceof Error ? error.message : "Failed to transcribe audio"
+      );
+    } finally {
+      setIsTranscribing(false);
     }
-    setShowConfirmation(false);
-    setRecordingUri(null);
-    setDuration(0);
   };
 
   async function startRecording() {
     try {
-      if (permissionResponse?.status !== "granted") {
-        await requestPermission();
+      if (!permissionResponse?.granted) {
+        const permission = await requestPermission();
+        if (!permission.granted) {
+          Alert.alert(
+            "Permission required",
+            "Please grant microphone permission to record audio"
+          );
+          return;
+        }
       }
-
       await Audio.setAudioModeAsync({
         allowsRecordingIOS: true,
         playsInSilentModeIOS: true,
         staysActiveInBackground: true,
+        shouldDuckAndroid: true,
+        playThroughEarpieceAndroid: false,
       });
 
       const { recording } = await Audio.Recording.createAsync(
@@ -163,9 +224,14 @@ export function AudioRecorder({ visible, onClose, onSave }: Props) {
       setIsRecording(false);
       setIsPaused(false);
       await recording.stopAndUnloadAsync();
+
+      // Update audio mode for playback
       await Audio.setAudioModeAsync({
         allowsRecordingIOS: false,
-        staysActiveInBackground: false,
+        playsInSilentModeIOS: true,
+        staysActiveInBackground: true,
+        shouldDuckAndroid: true,
+        playThroughEarpieceAndroid: false,
       });
 
       const uri = recording.getURI();
@@ -224,6 +290,26 @@ export function AudioRecorder({ visible, onClose, onSave }: Props) {
     </View>
   );
 
+  const renderFooter = () => (
+    <View style={styles.footer}>
+      {recordingUri ? (
+        <View style={styles.actionButtons}>
+          <OutlineButton onPress={handleDiscard}>Discard</OutlineButton>
+          <PrimaryButton
+            onPress={() => handleTranscribe(recordingUri)}
+            loading={isTranscribing}
+          >
+            Transcribe
+          </PrimaryButton>
+        </View>
+      ) : (
+        <Text variant="bodySmall" style={styles.hint}>
+          Tap the microphone to start recording
+        </Text>
+      )}
+    </View>
+  );
+
   return (
     <PaywallGuard feature="audioRecordings">
       <Modal
@@ -272,12 +358,7 @@ export function AudioRecorder({ visible, onClose, onSave }: Props) {
               {recordingUri ? (
                 <>
                   <AudioPlayer uri={recordingUri} />
-                  <View style={styles.actionButtons}>
-                    <OutlineButton onPress={handleDiscard}>
-                      Discard
-                    </OutlineButton>
-                    <PrimaryButton onPress={handleSave}>Save</PrimaryButton>
-                  </View>
+                  {renderFooter()}
                 </>
               ) : (
                 <>
@@ -288,16 +369,6 @@ export function AudioRecorder({ visible, onClose, onSave }: Props) {
                   {renderRecordingControls()}
                 </>
               )}
-
-              <Text variant="bodySmall" style={styles.hint}>
-                {isRecording
-                  ? isPaused
-                    ? "Recording paused"
-                    : "Recording in progress"
-                  : recordingUri
-                  ? "Review your recording"
-                  : "Tap to start recording"}
-              </Text>
             </View>
           </Animated.View>
 

@@ -32,7 +32,8 @@
         "RECORD_AUDIO",
         "CAMERA",
         "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE"
+        "WRITE_EXTERNAL_STORAGE",
+        "MODIFY_AUDIO_SETTINGS"
       ]
     },
     "plugins": [
@@ -41,6 +42,12 @@
         "expo-secure-store",
         {
           "faceIDPermission": "Allow Memor to access Face ID for secure storage"
+        }
+      ],
+      [
+        "expo-av",
+        {
+          "microphonePermission": "Allow Memor to access your microphone for audio recording"
         }
       ]
     ],

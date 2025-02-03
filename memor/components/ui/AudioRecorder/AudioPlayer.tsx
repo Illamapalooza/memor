@@ -17,7 +17,22 @@ export function AudioPlayer({ uri }: Props) {
   const theme = useAppTheme();
 
   useEffect(() => {
-    loadSound();
+    const setupAudio = async () => {
+      try {
+        await Audio.setAudioModeAsync({
+          allowsRecordingIOS: false,
+          playsInSilentModeIOS: true,
+          staysActiveInBackground: true,
+          shouldDuckAndroid: true,
+          playThroughEarpieceAndroid: false,
+        });
+        await loadSound();
+      } catch (error) {
+        console.error("Failed to setup audio", error);
+      }
+    };
+
+    setupAudio();
     return () => {
       sound?.unloadAsync();
     };

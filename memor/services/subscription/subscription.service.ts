@@ -51,7 +51,12 @@ export class SubscriptionService {
       }
 
       // Create new customer if none exists
-      const { data } = await axios.post(`http://localhost:3000/api/customers`, {
+
+      const url =
+        Platform.OS === "ios"
+          ? "http://localhost:3000/api/customers"
+          : "http://10.0.2.2:3000/api/customers";
+      const { data } = await axios.post(url, {
         email: user.email,
         name: user.displayName,
         userId: user.uid,
@@ -260,8 +265,14 @@ export class SubscriptionService {
       const { data } = await axios.post(url, {
         customerId,
         priceId,
-        successUrl: `http://localhost:3000/api/subscription-success`,
-        cancelUrl: `http://localhost:3000/api/subscription-cancel`,
+        successUrl:
+          Platform.OS === "ios"
+            ? "http://localhost:3000/api/subscription-success"
+            : "http://10.0.2.2:3000/api/subscription-success",
+        cancelUrl:
+          Platform.OS === "ios"
+            ? "http://localhost:3000/api/subscription-cancel"
+            : "http://10.0.2.2:3000/api/subscription-cancel",
       });
 
       // Open checkout URL in browser

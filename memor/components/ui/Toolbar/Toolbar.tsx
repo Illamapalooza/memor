@@ -19,20 +19,6 @@ export function Toolbar() {
   const insets = useSafeAreaInsets();
   const { checkFeatureAccess, showPaywall } = usePaywall();
 
-  const handleSaveRecording = async (uri: string) => {
-    try {
-      // Here you would typically:
-      // 1. Upload the audio file
-      // 2. Create a note with the audio attachment
-      // 3. Close the recorder
-      console.log("Recording saved at:", uri);
-      setShowRecorder(false);
-    } catch (error) {
-      console.error("Failed to save recording:", error);
-      Alert.alert("Error", "Failed to save recording. Please try again.");
-    }
-  };
-
   const handleAskAIPress = async () => {
     if (await checkFeatureAccess("aiQueries")) {
       setShowAIModal(true);
@@ -105,7 +91,6 @@ export function Toolbar() {
       <AudioRecorder
         visible={showRecorder}
         onClose={() => setShowRecorder(false)}
-        onSave={handleSaveRecording}
       />
 
       <AskAIModal visible={showAIModal} onClose={() => setShowAIModal(false)} />

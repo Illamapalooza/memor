@@ -313,7 +313,6 @@ export const AskAIModal = ({ visible, onClose }: Props) => {
         <AudioRecorder
           visible={showRecorder}
           onClose={() => setShowRecorder(false)}
-          onSave={handleAudioSave}
         />
       </Modal>
     </PaywallGuard>

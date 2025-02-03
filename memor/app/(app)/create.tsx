@@ -9,7 +9,7 @@ import {
   Modal,
   Alert,
 } from "react-native";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useNotes } from "@/features/notes/hooks/useNotes";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { Text } from "@/components/ui/Text/Text";
@@ -29,9 +29,15 @@ import { UsageService } from "@/services/usage/usage.service";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-export default function CreateNoteScreen() {
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
+export default function CreateScreen() {
+  const { title: initialTitle, content: initialContent } =
+    useLocalSearchParams<{
+      title?: string;
+      content?: string;
+    }>();
+
+  const [title, setTitle] = useState(initialTitle || "");
+  const [content, setContent] = useState(initialContent || "");
   const [isLoading, setIsLoading] = useState(false);
   const [showDiscardModal, setShowDiscardModal] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
