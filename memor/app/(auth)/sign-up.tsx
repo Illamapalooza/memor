@@ -61,6 +61,13 @@ export default function SignUpScreen() {
         onChangeText={setDisplayName}
         style={styles.input}
         mode="outlined"
+        textColor={theme.colors.onSurface}
+        theme={{
+          colors: {
+            primary: theme.colors.primary,
+            background: theme.colors.background,
+          },
+        }}
       />
 
       <TextInput
@@ -71,6 +78,13 @@ export default function SignUpScreen() {
         keyboardType="email-address"
         style={styles.input}
         mode="outlined"
+        textColor={theme.colors.onSurface}
+        theme={{
+          colors: {
+            primary: theme.colors.primary,
+            background: theme.colors.background,
+          },
+        }}
       />
 
       <TextInput
@@ -80,6 +94,13 @@ export default function SignUpScreen() {
         secureTextEntry
         style={styles.input}
         mode="outlined"
+        textColor={theme.colors.onSurface}
+        theme={{
+          colors: {
+            primary: theme.colors.primary,
+            background: theme.colors.background,
+          },
+        }}
       />
 
       <PasswordStrengthIndicator password={password} />
@@ -113,14 +134,16 @@ export default function SignUpScreen() {
           <Ionicons
             name="logo-google"
             size={20}
-            color="white"
+            color={theme.colors.background}
             style={{ marginLeft: 8 }}
           />
         </View>
       </PrimaryButton>
 
       <View style={styles.footer}>
-        <Text>Already have an account? </Text>
+        <Text style={{ color: theme.colors.onSurface }}>
+          Already have an account?{" "}
+        </Text>
         <LinkButton onPress={() => router.push("/(auth)/sign-in")}>
           Sign In
         </LinkButton>

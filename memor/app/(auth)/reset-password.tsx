@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, View, Pressable } from "react-native";
 import { TextInput, Button, Text } from "react-native-paper";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import { useAuthOperations } from "@/hooks/useAuth";
 import { useAppTheme } from "@/hooks/useAppTheme";
-
+import { PrimaryButton } from "@/components/ui/Button";
+import { Ionicons } from "@expo/vector-icons";
 export default function ResetPasswordScreen() {
   const theme = useAppTheme();
   const [email, setEmail] = useState("");
@@ -22,6 +23,15 @@ export default function ResetPasswordScreen() {
     <View
       style={[styles.container, { backgroundColor: theme.colors.background }]}
     >
+      <View style={styles.header}>
+        <Pressable onPress={() => router.back()}>
+          <Ionicons
+            name="chevron-back-outline"
+            size={24}
+            color={theme.colors.primary}
+          />
+        </Pressable>
+      </View>
       <Text
         variant="headlineMedium"
         style={[styles.title, { color: theme.colors.primary }]}
@@ -48,7 +58,7 @@ export default function ResetPasswordScreen() {
         <>
           <Text
             variant="bodyMedium"
-            style={[styles.subtitle, { color: theme.colors.onSurfaceVariant }]}
+            style={[styles.subtitle, { color: theme.colors.onSurface }]}
           >
             Enter your email address and we'll send you instructions to reset
             your password.
@@ -68,20 +78,31 @@ export default function ResetPasswordScreen() {
             keyboardType="email-address"
             style={styles.input}
             mode="outlined"
+            textColor={theme.colors.onSurface}
+            theme={{
+              colors: {
+                primary: theme.colors.primary,
+                background: theme.colors.background,
+              },
+            }}
           />
 
-          <Button
-            mode="contained"
+          <PrimaryButton
             onPress={handleResetPassword}
             loading={isLoading}
             style={styles.button}
             disabled={!email.trim()}
           >
             Send Reset Instructions
-          </Button>
+          </PrimaryButton>
 
           <View style={styles.footer}>
-            <Text variant="bodyMedium">Remember your password? </Text>
+            <Text
+              variant="bodyMedium"
+              style={{ color: theme.colors.onSurface }}
+            >
+              Remember your password?{" "}
+            </Text>
             <Link href="/(auth)/sign-in">
               <Text style={[styles.link, { color: theme.colors.primary }]}>
                 Sign In
@@ -135,5 +156,10 @@ const styles = StyleSheet.create({
   successText: {
     textAlign: "center",
     color: "#4CAF50",
+  },
+  header: {
+    position: "absolute",
+    top: 64,
+    left: 16,
   },
 });

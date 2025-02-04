@@ -30,10 +30,16 @@ export const SubscriptionModal = ({
 
   const BenefitsScreen = () => (
     <View style={styles.benefitsContainer}>
-      <Text variant="headlineSmall" style={styles.title}>
+      <Text
+        variant="headlineSmall"
+        style={[styles.title, { color: theme.colors.primary }]}
+      >
         Upgrade to Pro
       </Text>
-      <Text variant="bodyLarge" style={styles.subtitle}>
+      <Text
+        variant="bodyLarge"
+        style={[styles.subtitle, { color: theme.colors.onSurface }]}
+      >
         Unlock the full potential of your mind
       </Text>
 
@@ -73,7 +79,10 @@ export const SubscriptionModal = ({
 
   const PlansScreen = () => (
     <View style={styles.plansContainer}>
-      <Text variant="headlineSmall" style={styles.title}>
+      <Text
+        variant="headlineSmall"
+        style={[styles.title, { color: theme.colors.onSurface }]}
+      >
         Choose Your Plan
       </Text>
       <View style={styles.plans}>
@@ -85,9 +94,18 @@ export const SubscriptionModal = ({
             },
           ]}
         >
-          <Text variant="titleLarge">Monthly</Text>
-          <Text variant="headlineMedium">$9.99</Text>
-          <Text variant="bodyMedium">per month</Text>
+          <Text variant="titleLarge" style={{ color: theme.colors.onSurface }}>
+            Monthly
+          </Text>
+          <Text
+            variant="headlineMedium"
+            style={{ color: theme.colors.primary }}
+          >
+            $9.99
+          </Text>
+          <Text variant="bodyMedium" style={{ color: theme.colors.onSurface }}>
+            per month
+          </Text>
           <View style={{ justifyContent: "flex-end", flex: 1 }}>
             <PrimaryButton
               onPress={() => handleSelectPlan("monthly")}
@@ -106,9 +124,18 @@ export const SubscriptionModal = ({
             },
           ]}
         >
-          <Text variant="titleLarge">Yearly</Text>
-          <Text variant="headlineMedium">$99.99</Text>
-          <Text variant="bodyMedium">per year</Text>
+          <Text variant="titleLarge" style={{ color: theme.colors.onSurface }}>
+            Yearly
+          </Text>
+          <Text
+            variant="headlineMedium"
+            style={{ color: theme.colors.primary }}
+          >
+            $99.99
+          </Text>
+          <Text variant="bodyMedium" style={{ color: theme.colors.onSurface }}>
+            per year
+          </Text>
           <Text variant="labelLarge" style={{ color: theme.colors.primary }}>
             Save 17%
           </Text>
@@ -169,8 +196,13 @@ const BenefitItem = ({ icon, title, description }: BenefitItemProps) => {
         <Ionicons name={icon} size={24} color={theme.colors.surface} />
       </View>
       <View style={styles.benefitText}>
-        <Text variant="titleMedium">{title}</Text>
-        <Text variant="bodyMedium" style={{ opacity: 0.7 }}>
+        <Text variant="titleMedium" style={{ color: theme.colors.primary }}>
+          {title}
+        </Text>
+        <Text
+          variant="bodyMedium"
+          style={{ opacity: 0.7, color: theme.colors.onSurface }}
+        >
           {description}
         </Text>
       </View>
@@ -209,11 +241,13 @@ const styles = StyleSheet.create({
   title: {
     textAlign: "center",
     marginBottom: 8,
+    fontFamily: "Nunito-Bold",
   },
   subtitle: {
     textAlign: "center",
     opacity: 0.7,
     marginBottom: 24,
+    fontFamily: "Nunito-Regular",
   },
   benefitsList: {
     gap: 16,

@@ -58,10 +58,13 @@ export default function EditProfileScreen() {
             <Ionicons
               name="chevron-back-outline"
               size={20}
-              color={theme.colors.onSurfaceVariant}
+              color={theme.colors.primary}
             />
           </Pressable>
-          <Text variant="subtitle2" style={styles.title}>
+          <Text
+            variant="subtitle2"
+            style={[styles.title, { color: theme.colors.primary }]}
+          >
             Edit Profile
           </Text>
           <View style={{ width: 40 }} />
@@ -74,7 +77,14 @@ export default function EditProfileScreen() {
             value={name}
             onChangeText={setName}
             style={styles.input}
+            textColor={theme.colors.onSurface}
             placeholderTextColor={colors.blackOlive[800]}
+            theme={{
+              colors: {
+                primary: theme.colors.primary,
+                background: theme.colors.background,
+              },
+            }}
           />
 
           <PrimaryButton

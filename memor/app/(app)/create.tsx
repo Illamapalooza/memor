@@ -183,14 +183,17 @@ function CreateNoteContent({
     <>
       <SafeAreaView style={{ flex: 1 }}>
         <View style={[styles.header]}>
-          <Pressable onPress={handleBack} style={styles.backButton}>
+          <Pressable onPress={handleBack} style={[styles.backButton]}>
             <Ionicons
               name="chevron-back-outline"
-              size={20}
-              color={theme.colors.onSurfaceVariant}
+              size={24}
+              color={theme.colors.primary}
             />
           </Pressable>
-          <Text variant="subtitle2" style={styles.title}>
+          <Text
+            variant="subtitle2"
+            style={[styles.title, { color: theme.colors.primary }]}
+          >
             New Note
           </Text>
           <GhostButton
@@ -199,6 +202,7 @@ function CreateNoteContent({
             disabled={!title.trim() || !content.trim() || isSaving}
             size="large"
             style={styles.saveButton}
+            textStyle={{ color: theme.colors.primary }}
           >
             {isSaving ? "Saving..." : "Save"}
           </GhostButton>
@@ -209,7 +213,7 @@ function CreateNoteContent({
             placeholder="Title"
             value={title}
             onChangeText={setTitle}
-            style={styles.titleInput}
+            style={[styles.titleInput, { color: theme.colors.onSurface }]}
             placeholderTextColor={colors.blackOlive[800]}
           />
           <TextInput
@@ -217,7 +221,7 @@ function CreateNoteContent({
             value={content}
             onChangeText={setContent}
             multiline
-            style={styles.contentInput}
+            style={[styles.contentInput, { color: theme.colors.onSurface }]}
             placeholderTextColor={colors.blackOlive[600]}
           />
         </View>

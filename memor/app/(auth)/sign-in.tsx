@@ -1,14 +1,16 @@
 import React, { useState } from "react";
-import { SafeAreaView, StyleSheet, View } from "react-native";
+import { SafeAreaView, StyleSheet, View, Pressable } from "react-native";
 import { TextInput, Text } from "react-native-paper";
 import { router } from "expo-router";
 import { useAuthOperations } from "@/hooks/useAuth";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { PrimaryButton, LinkButton } from "@/components/ui/Button";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { useTheme } from "@/contexts/ThemeContext";
 
 export default function SignInScreen() {
   const theme = useAppTheme();
+  const { themeMode, setThemeMode } = useTheme();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { signIn, isLoading, error } = useAuthOperations();
@@ -17,10 +19,35 @@ export default function SignInScreen() {
     signIn(email, password);
   };
 
+  const toggleTheme = () => {
+    const modes: ("light" | "dark" | "system")[] = ["light", "dark", "system"];
+    const currentIndex = modes.indexOf(themeMode);
+    const nextMode = modes[(currentIndex + 1) % modes.length];
+    setThemeMode(nextMode);
+  };
+
+  const getThemeIcon = () => {
+    switch (themeMode) {
+      case "dark":
+        return "moon";
+      case "light":
+        return "sunny";
+      default:
+        return "phone-portrait";
+    }
+  };
+
   return (
     <View
       style={[styles.container, { backgroundColor: theme.colors.background }]}
     >
+      <Pressable onPress={toggleTheme} style={styles.themeButton}>
+        <Ionicons
+          name={getThemeIcon()}
+          size={24}
+          color={theme.colors.primary}
+        />
+      </Pressable>
       <Text
         variant="headlineMedium"
         style={[styles.title, { color: theme.colors.primary }]}
@@ -55,6 +82,13 @@ export default function SignInScreen() {
         keyboardType="email-address"
         style={styles.input}
         mode="outlined"
+        textColor={theme.colors.onSurface}
+        theme={{
+          colors: {
+            primary: theme.colors.primary,
+            background: theme.colors.background,
+          },
+        }}
       />
 
       <TextInput
@@ -64,6 +98,13 @@ export default function SignInScreen() {
         secureTextEntry
         style={styles.input}
         mode="outlined"
+        textColor={theme.colors.onSurface}
+        theme={{
+          colors: {
+            primary: theme.colors.primary,
+            background: theme.colors.background,
+          },
+        }}
       />
 
       <LinkButton
@@ -113,7 +154,9 @@ export default function SignInScreen() {
       </PrimaryButton>
 
       <View style={styles.footer}>
-        <Text variant="bodyMedium">Don't have an account? </Text>
+        <Text variant="bodyMedium" style={{ color: theme.colors.onSurface }}>
+          Don't have an account?{" "}
+        </Text>
         <LinkButton onPress={() => router.push("/(auth)/sign-up")}>
           Sign Up
         </LinkButton>
@@ -127,6 +170,21 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     justifyContent: "center",
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 32,
+  },
+  themeButton: {
+    width: 40,
+    height: 40,
+    justifyContent: "center",
+    alignItems: "center",
+    position: "absolute",
+    top: 64,
+    left: 16,
   },
   content: {
     flex: 1,

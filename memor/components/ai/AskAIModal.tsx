@@ -22,6 +22,7 @@ import { PaywallGuard } from "@/components/core/PaywallGuard";
 import { useAIQuery } from "@/hooks/useAIQuery";
 import { IconButton } from "@/components/ui/Button/Button";
 import { useTTS } from "@/hooks/useTTS";
+import { useAppTheme } from "@/hooks/useAppTheme";
 
 type Props = {
   visible: boolean;
@@ -36,7 +37,8 @@ const SUGGESTED_QUESTIONS = [
 ];
 
 export const AskAIModal = ({ visible, onClose }: Props) => {
-  const theme = useTheme();
+  const theme = useAppTheme();
+  const { dark } = useTheme();
   const { userProfile } = useAuth();
   const [query, setQuery] = useState("");
   const [response, setResponse] = useState<string | null>(null);
@@ -219,7 +221,18 @@ export const AskAIModal = ({ visible, onClose }: Props) => {
         onChangeText={setQuery}
         placeholder="Ask anything about your notes..."
         multiline
-        style={[styles.input, { backgroundColor: theme.colors.background }]}
+        style={[
+          styles.input,
+          {
+            backgroundColor: theme.colors.background,
+          },
+        ]}
+        textColor={theme.colors.onSurface}
+        theme={{
+          colors: {
+            primary: theme.colors.primary,
+          },
+        }}
       />
       <View style={styles.buttonContainer}>
         <IconButton
@@ -247,7 +260,10 @@ export const AskAIModal = ({ visible, onClose }: Props) => {
 
   const renderResponseHeader = () => (
     <View style={styles.responseHeader}>
-      <Text variant="bodySmall" style={styles.responseLabel}>
+      <Text
+        variant="bodySmall"
+        style={[styles.responseLabel, { color: theme.colors.onSurfaceVariant }]}
+      >
         Response
       </Text>
       <View style={styles.responseControls}>
@@ -289,7 +305,7 @@ export const AskAIModal = ({ visible, onClose }: Props) => {
             style={[
               styles.modalContent,
               {
-                backgroundColor: theme.colors.surface,
+                backgroundColor: theme.colors.background,
                 transform: [{ translateY: modalTranslateY }],
               },
             ]}
@@ -301,7 +317,12 @@ export const AskAIModal = ({ visible, onClose }: Props) => {
                   size={24}
                   color={theme.colors.primary}
                 />
-                <Text variant="subtitle1">What can I help you with?</Text>
+                <Text
+                  variant="subtitle1"
+                  style={{ color: theme.colors.onSurface }}
+                >
+                  What can I help you with?
+                </Text>
               </View>
               <View style={styles.headerButtons}>
                 {response && (
@@ -326,7 +347,12 @@ export const AskAIModal = ({ visible, onClose }: Props) => {
             <View style={styles.content}>
               {!response && !isLoading && (
                 <View style={styles.suggestedQuestions}>
-                  <Text variant="body">Try asking:</Text>
+                  <Text
+                    variant="body"
+                    style={{ color: theme.colors.onSurface }}
+                  >
+                    Try asking:
+                  </Text>
                   <View style={styles.questionsList}>
                     {SUGGESTED_QUESTIONS.map((question) => (
                       <OutlineButton
@@ -346,12 +372,19 @@ export const AskAIModal = ({ visible, onClose }: Props) => {
 
               {(streamedResponse || isLoading) && (
                 <ScrollView
-                  style={styles.responseContainer}
+                  style={[
+                    styles.responseContainer,
+                    { backgroundColor: theme.colors.background },
+                  ]}
                   contentContainerStyle={styles.responseContent}
+                  indicatorStyle={dark ? "black" : "white"}
                 >
                   {renderResponseHeader()}
 
-                  <Text variant="body">
+                  <Text
+                    variant="body"
+                    style={{ color: theme.colors.onSurface }}
+                  >
                     {streamedResponse}
                     {isLoading && <Text style={{ opacity: 0.5 }}>|</Text>}
                   </Text>

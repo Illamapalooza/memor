@@ -99,11 +99,14 @@ export default function EditNoteScreen() {
           <Pressable onPress={handleBack} style={styles.backButton}>
             <Ionicons
               name="chevron-back-outline"
-              size={20}
-              color={theme.colors.onSurfaceVariant}
+              size={24}
+              color={theme.colors.primary}
             />
           </Pressable>
-          <Text variant="subtitle2" style={styles.title}>
+          <Text
+            variant="subtitle2"
+            style={[styles.title, { color: theme.colors.primary }]}
+          >
             Edit Note
           </Text>
           <GhostButton
@@ -112,6 +115,7 @@ export default function EditNoteScreen() {
             disabled={!title.trim() || !content.trim() || !hasUnsavedChanges}
             size="large"
             style={styles.saveButton}
+            textStyle={{ color: theme.colors.primary }}
           >
             {isSaved ? "Saved" : "Save"}
           </GhostButton>

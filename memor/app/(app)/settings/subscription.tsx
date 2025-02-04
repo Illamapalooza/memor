@@ -21,10 +21,13 @@ export default function SubscriptionScreen() {
           <Ionicons
             name="chevron-back-outline"
             size={20}
-            color={theme.colors.onSurfaceVariant}
+            color={theme.colors.primary}
           />
         </Pressable>
-        <Text variant="subtitle2" style={styles.title}>
+        <Text
+          variant="subtitle2"
+          style={[styles.title, { color: theme.colors.primary }]}
+        >
           Subscription
         </Text>
         <View style={{ width: 40 }} />

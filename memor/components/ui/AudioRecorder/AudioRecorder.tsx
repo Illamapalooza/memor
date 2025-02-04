@@ -351,18 +351,23 @@ export function AudioRecorder({
             ]}
           >
             <View style={styles.header}>
-              <Text variant="h3">{getModalTitle()}</Text>
+              <Text variant="h3" style={{ color: theme.colors.onSurface }}>
+                {getModalTitle()}
+              </Text>
               <Pressable onPress={handleClose}>
                 <IconSymbol
                   name="xmark"
                   size={24}
-                  color={theme.colors.onSurface}
+                  color={theme.colors.primary}
                 />
               </Pressable>
             </View>
 
             <View style={styles.recordingContainer}>
-              <Text variant="h3" style={styles.timer}>
+              <Text
+                variant="h3"
+                style={[styles.timer, { color: theme.colors.onSurface }]}
+              >
                 {formatDuration(duration)}
               </Text>
 

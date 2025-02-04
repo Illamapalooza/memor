@@ -53,7 +53,12 @@ export function Toolbar() {
           onPress={handleRecordPress}
         >
           <Ionicons name="mic" size={24} color={theme.colors.onSurface} />
-          <Text variant="bodySmall">Record</Text>
+          <Text
+            variant="bodySmall"
+            style={{ fontFamily: "Nunito-Bold", color: theme.colors.onSurface }}
+          >
+            Record
+          </Text>
         </Pressable>
 
         <Pressable
@@ -66,8 +71,18 @@ export function Toolbar() {
           ]}
           onPress={handleAskAIPress}
         >
-          <Ionicons name="sparkles" size={24} color={theme.colors.surface} />
-          <Text variant="bodySmall" style={{ color: theme.colors.surface }}>
+          <Ionicons
+            name="sparkles"
+            size={24}
+            color={theme.colors.onSurfaceVariant}
+          />
+          <Text
+            variant="bodySmall"
+            style={{
+              fontFamily: "Nunito-Bold",
+              color: theme.colors.onSurfaceVariant,
+            }}
+          >
             Ask your mind
           </Text>
         </Pressable>
@@ -84,7 +99,12 @@ export function Toolbar() {
             size={24}
             color={theme.colors.onSurface}
           />
-          <Text variant="bodySmall">Create</Text>
+          <Text
+            variant="bodySmall"
+            style={{ fontFamily: "Nunito-Bold", color: theme.colors.onSurface }}
+          >
+            Create
+          </Text>
         </Pressable>
       </View>
 

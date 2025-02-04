@@ -105,7 +105,10 @@ export const SubscriptionManager = () => {
             </Text>
           )}
           {!isTrialing && subscription.currentPeriodEnd && (
-            <Text variant="bodyMedium">
+            <Text
+              variant="bodyMedium"
+              style={{ color: theme.colors.onSurface }}
+            >
               Next billing date:{" "}
               {formatDate(new Date(subscription.currentPeriodEnd * 1000))}
             </Text>
@@ -121,11 +124,28 @@ export const SubscriptionManager = () => {
 
       {!isSubscribed && !isTrialing && (
         <View style={styles.planDetails}>
-          <Text variant="titleMedium">Free Plan Features:</Text>
+          <Text variant="titleMedium" style={{ color: theme.colors.primary }}>
+            Free Plan Features:
+          </Text>
           <View style={styles.features}>
-            <Text variant="bodyMedium">• Basic note-taking</Text>
-            <Text variant="bodyMedium">• 5 AI queries per day</Text>
-            <Text variant="bodyMedium">• Basic RAG features</Text>
+            <Text
+              variant="bodyMedium"
+              style={{ color: theme.colors.onSurface }}
+            >
+              • Basic note-taking
+            </Text>
+            <Text
+              variant="bodyMedium"
+              style={{ color: theme.colors.onSurface }}
+            >
+              • 5 AI queries per day
+            </Text>
+            <Text
+              variant="bodyMedium"
+              style={{ color: theme.colors.onSurface }}
+            >
+              • Basic RAG features
+            </Text>
           </View>
           <PrimaryButton
             onPress={() => setShowSubscriptionModal(true)}

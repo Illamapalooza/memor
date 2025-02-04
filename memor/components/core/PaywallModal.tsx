@@ -67,21 +67,38 @@ export const PaywallModal = ({
             <Ionicons name="close" size={24} color={theme.colors.onSurface} />
           </Pressable>
 
-          <Text variant="headlineSmall" style={styles.title}>
+          <Text
+            variant="headlineSmall"
+            style={[styles.title, { color: theme.colors.primary }]}
+          >
             {getTitle()}
           </Text>
-          <Text variant="bodyLarge" style={styles.message}>
+          <Text
+            variant="bodyLarge"
+            style={[styles.message, { color: theme.colors.onSurface }]}
+          >
             {getMessage()}
           </Text>
 
           <View style={styles.features}>
-            <Text variant="bodyMedium" style={styles.featuresTitle}>
+            <Text
+              variant="bodyMedium"
+              style={[styles.featuresTitle, { color: theme.colors.onSurface }]}
+            >
               Pro Features:
             </Text>
-            <Text variant="bodyMedium">• Unlimited AI queries</Text>
-            <Text variant="bodyMedium">• Unlimited audio recordings</Text>
-            <Text variant="bodyMedium">• Unlimited notes</Text>
-            <Text variant="bodyMedium">• Advanced features</Text>
+            <Text variant="bodyMedium" style={{ color: theme.colors.primary }}>
+              • Unlimited AI queries
+            </Text>
+            <Text variant="bodyMedium" style={{ color: theme.colors.primary }}>
+              • Unlimited audio recordings
+            </Text>
+            <Text variant="bodyMedium" style={{ color: theme.colors.primary }}>
+              • Unlimited notes
+            </Text>
+            <Text variant="bodyMedium" style={{ color: theme.colors.primary }}>
+              • Advanced features
+            </Text>
           </View>
 
           <View style={styles.buttons}>

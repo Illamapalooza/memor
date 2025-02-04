@@ -4,11 +4,13 @@ import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { ThemeProvider } from "@/components/core/ThemeProvider";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 import { AuthProvider } from "@/services/auth/AuthProvider";
 import { NotesProvider } from "@/features/notes/context/NotesContext";
 import { StripeProvider } from "@stripe/stripe-react-native";
 import { PaywallProvider } from "@/contexts/PaywallContext";
+import { PaperProvider } from "react-native-paper";
+import React from "react";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -33,18 +35,20 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <ThemeProvider>
-        <StripeProvider
-          publishableKey={process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY!}
-        >
-          <AuthProvider>
-            <PaywallProvider>
-              <NotesProvider>
-                <StatusBar style="auto" />
-                <Slot />
-              </NotesProvider>
-            </PaywallProvider>
-          </AuthProvider>
-        </StripeProvider>
+        <PaperProvider>
+          <StripeProvider
+            publishableKey={process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY!}
+          >
+            <AuthProvider>
+              <PaywallProvider>
+                <NotesProvider>
+                  <StatusBar style="auto" />
+                  <Slot />
+                </NotesProvider>
+              </PaywallProvider>
+            </AuthProvider>
+          </StripeProvider>
+        </PaperProvider>
       </ThemeProvider>
     </SafeAreaProvider>
   );

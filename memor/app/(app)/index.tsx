@@ -73,10 +73,16 @@ export default function HomeScreen() {
         size={100}
         color={theme.colors.onSurface}
       />
-      <Text variant="subtitle1" style={styles.emptyTitle}>
+      <Text
+        variant="subtitle1"
+        style={[styles.emptyTitle, { color: theme.colors.primary }]}
+      >
         {searchQuery ? "No matches found" : "No Notes Yet"}
       </Text>
-      <Text variant="body" style={styles.emptyText}>
+      <Text
+        variant="body"
+        style={[styles.emptyText, { color: theme.colors.onSurface }]}
+      >
         {searchQuery
           ? "Try different search terms"
           : "Start capturing your thoughts and ideas. Create your first note now!"}
@@ -128,7 +134,7 @@ export default function HomeScreen() {
           {
             height: searchBarHeight,
             opacity: searchBarOpacity,
-            backgroundColor: theme.colors.surface,
+            backgroundColor: theme.colors.background,
           },
         ]}
       >
@@ -143,8 +149,9 @@ export default function HomeScreen() {
               color: theme.colors.onSurface,
             },
           ]}
-          placeholderTextColor={theme.colors.onSurfaceVariant}
+          placeholderTextColor={theme.colors.onSurface}
           autoFocus={isSearchVisible}
+          selectionColor={theme.colors.primary}
         />
       </Animated.View>
 

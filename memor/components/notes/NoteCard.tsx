@@ -38,8 +38,14 @@ export function NoteCard({ note, onDelete }: Props) {
       ]}
       onPress={() => router.push(`/note/${note.id}`)}
     >
-      <Text variant="subtitle2">{note.title}</Text>
-      <Text variant="bodySmall" numberOfLines={7}>
+      <Text variant="subtitle2" style={{ color: theme.colors.onSurface }}>
+        {note.title}
+      </Text>
+      <Text
+        variant="bodySmall"
+        numberOfLines={7}
+        style={{ color: theme.colors.onSurface }}
+      >
         {note.content}
       </Text>
       <Menu

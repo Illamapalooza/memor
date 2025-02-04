@@ -1,6 +1,6 @@
-import { useTheme } from "react-native-paper";
+import { useTheme as useThemeContext } from "@/contexts/ThemeContext";
 
-export function useAppTheme() {
-  const theme = useTheme();
+export const useAppTheme = () => {
+  const { theme } = useThemeContext();
   return theme;
-}
+};
