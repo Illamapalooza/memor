@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { View, StyleSheet, ScrollView, Pressable } from "react-native";
 import { Text } from "@/components/ui/Text/Text";
 import { useAppTheme } from "@/hooks/useAppTheme";
@@ -9,6 +9,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { OutlineButton } from "@/components/ui/Button";
 import { useAuthOperations } from "@/hooks/useAuth";
 import { colors } from "@/utils/theme";
+import { Switch } from "react-native-paper";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type SettingItemProps = {
   title: string;
@@ -76,10 +78,38 @@ const SettingItem = ({
   );
 };
 
+const SETTINGS_KEYS = {
+  TTS_ENABLED: "settings.tts_enabled",
+} as const;
+
 export default function SettingsScreen() {
   const theme = useAppTheme();
   const { logout } = useAuthOperations();
   const { userProfile } = useAuth();
+  const [ttsEnabled, setTTSEnabled] = useState(false);
+
+  useEffect(() => {
+    loadSettings();
+  }, []);
+
+  const loadSettings = async () => {
+    try {
+      const ttsEnabled = await AsyncStorage.getItem(SETTINGS_KEYS.TTS_ENABLED);
+      setTTSEnabled(ttsEnabled === "true");
+    } catch (error) {
+      console.error("Error loading settings:", error);
+    }
+  };
+
+  const handleTTSToggle = async () => {
+    try {
+      const newValue = !ttsEnabled;
+      await AsyncStorage.setItem(SETTINGS_KEYS.TTS_ENABLED, String(newValue));
+      setTTSEnabled(newValue);
+    } catch (error) {
+      console.error("Error saving TTS setting:", error);
+    }
+  };
 
   const navigateToEditProfile = () => {
     router.push("/settings/edit-profile");
@@ -171,6 +201,19 @@ export default function SettingsScreen() {
             onPress={() => router.push("/settings/terms")}
             icon="document-text-outline"
           />
+        </View>
+
+        <View style={styles.section}>
+          <Text variant="h3">AI Assistant</Text>
+          <View style={styles.setting}>
+            <View style={styles.settingInfo}>
+              <Text variant="body">Text-to-Speech</Text>
+              <Text variant="bodySmall" style={styles.settingDescription}>
+                Enable voice responses for AI queries
+              </Text>
+            </View>
+            <Switch value={ttsEnabled} onValueChange={handleTTSToggle} />
+          </View>
         </View>
 
         <View style={[styles.section, styles.signOutSection]}>
@@ -271,5 +314,20 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+  },
+  setting: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: 16,
+    borderWidth: 2,
+    borderColor: colors.jasper.DEFAULT,
+    borderRadius: 12,
+  },
+  settingInfo: {
+    flex: 1,
+  },
+  settingDescription: {
+    color: colors.jasper.DEFAULT,
   },
 });

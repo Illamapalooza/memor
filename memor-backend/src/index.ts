@@ -11,6 +11,7 @@ import { customerRoutes } from "./routes/customer.routes";
 import { ragRoutes } from "./routes/rag.routes";
 import { NoteVectorizationService } from "./services/note-vectorization.service";
 import { transcriptionRoutes } from "./routes/transcription.routes";
+import { ttsRoutes } from "./routes/tts.routes";
 
 // Load environment variables
 dotenv.config();
@@ -61,6 +62,7 @@ app.use("/api/customers", customerRoutes);
 app.use("/api/subscriptions", subscriptionRoutes);
 app.use("/api/rag", ragRoutes);
 app.use("/api/transcription", transcriptionRoutes);
+app.use("/api/tts", ttsRoutes);
 // Error handling
 app.use(errorHandler);
 

@@ -21,6 +21,7 @@ import { UsageService } from "@/services/usage/usage.service";
 import { PaywallGuard } from "@/components/core/PaywallGuard";
 import { useAIQuery } from "@/hooks/useAIQuery";
 import { IconButton } from "@/components/ui/Button/Button";
+import { useTTS } from "@/hooks/useTTS";
 
 type Props = {
   visible: boolean;
@@ -46,6 +47,7 @@ export const AskAIModal = ({ visible, onClose }: Props) => {
   const [streamController, setStreamController] =
     useState<AbortController | null>(null);
   const [isProcessingAudio, setIsProcessingAudio] = useState(false);
+  const { speak, stop, isPlaying, isTTSEnabled, toggleTTS } = useTTS();
 
   const modalTranslateY = React.useRef(new Animated.Value(1000)).current;
   const overlayOpacity = React.useRef(new Animated.Value(0)).current;
@@ -84,13 +86,31 @@ export const AskAIModal = ({ visible, onClose }: Props) => {
   const handleSubmit = async () => {
     if (!query.trim() || isLoading) return;
 
-    setStreamedResponse(""); // Reset streamed response
-    const result = await queryAI(query);
+    try {
+      setStreamedResponse(""); // Reset streamed response
+      const result = await queryAI(query);
 
-    if (result) {
-      setResponse(result.answer);
-      setRelevantNotes(result.relevantNotes);
-      simulateStreamingResponse(result.answer);
+      if (result) {
+        setResponse(result.answer);
+        setRelevantNotes(result.relevantNotes);
+        simulateStreamingResponse(result.answer);
+
+        // Wait for streaming to complete before playing TTS
+        if (isTTSEnabled) {
+          // Small delay to ensure streaming has started
+          setTimeout(async () => {
+            try {
+              console.log("Starting TTS...");
+              await speak(result.answer);
+            } catch (error) {
+              console.error("TTS error:", error);
+            }
+          }, 500);
+        }
+      }
+    } catch (error) {
+      console.error("Error in handleSubmit:", error);
+      Alert.alert("Error", "Failed to process query");
     }
   };
 
@@ -158,13 +178,24 @@ export const AskAIModal = ({ visible, onClose }: Props) => {
       setShowRecorder(false);
       setQuery(transcription.content);
 
-      // Automatically trigger the RAG query with transcribed content
       const result = await queryAI(transcription.content);
 
       if (result) {
         setResponse(result.answer);
         setRelevantNotes(result.relevantNotes);
         simulateStreamingResponse(result.answer);
+
+        // Wait for streaming to complete before playing TTS
+        if (isTTSEnabled) {
+          setTimeout(async () => {
+            try {
+              console.log("Starting TTS for audio query...");
+              await speak(result.answer);
+            } catch (error) {
+              console.error("TTS error:", error);
+            }
+          }, 500);
+        }
       }
     } catch (error) {
       console.error("Error processing audio query:", error);
@@ -173,6 +204,13 @@ export const AskAIModal = ({ visible, onClose }: Props) => {
       setIsProcessingAudio(false);
     }
   };
+
+  // Add cleanup for TTS when modal closes
+  useEffect(() => {
+    if (!visible) {
+      stop();
+    }
+  }, [visible, stop]);
 
   const renderInputSection = () => (
     <View style={styles.inputContainer}>
@@ -203,6 +241,26 @@ export const AskAIModal = ({ visible, onClose }: Props) => {
         >
           Ask AI
         </PrimaryButton>
+      </View>
+    </View>
+  );
+
+  const renderResponseHeader = () => (
+    <View style={styles.responseHeader}>
+      <Text variant="bodySmall" style={styles.responseLabel}>
+        Response
+      </Text>
+      <View style={styles.responseControls}>
+        <IconButton
+          icon={isTTSEnabled ? "volume-high" : "volume-off"}
+          onPress={toggleTTS}
+          size="small"
+          iconSize={20}
+          disabled={isLoading || isProcessingAudio}
+        />
+        {isPlaying && (
+          <IconButton icon="stop" onPress={stop} size="small" iconSize={20} />
+        )}
       </View>
     </View>
   );
@@ -291,20 +349,7 @@ export const AskAIModal = ({ visible, onClose }: Props) => {
                   style={styles.responseContainer}
                   contentContainerStyle={styles.responseContent}
                 >
-                  <View style={styles.responseHeader}>
-                    <Text variant="bodySmall" style={styles.responseLabel}>
-                      Response
-                    </Text>
-                    {streamedResponse && (
-                      <Pressable
-                        onPress={handleCopyResponse}
-                        style={styles.copyButton}
-                      >
-                        <Ionicons name="copy-outline" size={16} />
-                        <Text variant="bodySmall">Copy</Text>
-                      </Pressable>
-                    )}
-                  </View>
+                  {renderResponseHeader()}
 
                   <Text variant="body">
                     {streamedResponse}
@@ -418,14 +463,10 @@ const styles = StyleSheet.create({
   responseLabel: {
     opacity: 0.7,
   },
-  copyButton: {
+  responseControls: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderRadius: 4,
-    backgroundColor: "transparent",
+    gap: 8,
   },
   responseContent: {
     padding: 16,
