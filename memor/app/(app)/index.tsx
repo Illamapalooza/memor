@@ -1,5 +1,12 @@
-import React from "react";
-import { View, StyleSheet, Image } from "react-native";
+import React, { useState, useRef } from "react";
+import {
+  View,
+  StyleSheet,
+  Image,
+  Animated,
+  TextInput,
+  Pressable,
+} from "react-native";
 import { MasonryFlashList } from "@shopify/flash-list";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAppTheme } from "@/hooks/useAppTheme";
@@ -17,6 +24,42 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const { notes, deleteNote } = useNotes();
   const router = useRouter();
+  const [isSearchVisible, setIsSearchVisible] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const searchBarAnimation = useRef(new Animated.Value(0)).current;
+
+  // Filter notes based on search query
+  const filteredNotes = notes.filter((note) => {
+    const query = searchQuery.toLowerCase();
+    return (
+      note.title.toLowerCase().includes(query) ||
+      note.content.toLowerCase().includes(query)
+    );
+  });
+
+  const toggleSearch = () => {
+    const toValue = isSearchVisible ? 0 : 1;
+    setIsSearchVisible(!isSearchVisible);
+    Animated.spring(searchBarAnimation, {
+      toValue,
+      useNativeDriver: false,
+      friction: 8,
+    }).start();
+
+    if (!isSearchVisible) {
+      setSearchQuery("");
+    }
+  };
+
+  const searchBarHeight = searchBarAnimation.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 50],
+  });
+
+  const searchBarOpacity = searchBarAnimation.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 1],
+  });
 
   const EmptyState = () => (
     <View style={styles.emptyContainer}>
@@ -31,17 +74,21 @@ export default function HomeScreen() {
         color={theme.colors.onSurface}
       />
       <Text variant="subtitle1" style={styles.emptyTitle}>
-        No Notes Yet
+        {searchQuery ? "No matches found" : "No Notes Yet"}
       </Text>
       <Text variant="body" style={styles.emptyText}>
-        Start capturing your thoughts and ideas. Create your first note now!
+        {searchQuery
+          ? "Try different search terms"
+          : "Start capturing your thoughts and ideas. Create your first note now!"}
       </Text>
-      <PrimaryButton
-        onPress={() => router.push("/create")}
-        style={styles.createButton}
-      >
-        Create Your First Note
-      </PrimaryButton>
+      {!searchQuery && (
+        <PrimaryButton
+          onPress={() => router.push("/create")}
+          style={styles.createButton}
+        >
+          Create Your First Note
+        </PrimaryButton>
+      )}
     </View>
   );
 
@@ -57,22 +104,55 @@ export default function HomeScreen() {
     >
       <View style={styles.header}>
         <Ionicons
-          name="person-outline"
+          name="person"
           size={24}
-          color={theme.colors.onSurface}
+          color={theme.colors.primary}
           style={styles.icon}
           onPress={() => router.push("/settings")}
         />
         <Text variant="body" style={styles.title}>
           My Mind
         </Text>
+        <Pressable onPress={toggleSearch} style={styles.searchIcon}>
+          <Ionicons
+            name={isSearchVisible ? "close" : "search"}
+            size={24}
+            color={theme.colors.primary}
+          />
+        </Pressable>
       </View>
 
-      {notes.length === 0 ? (
+      <Animated.View
+        style={[
+          styles.searchContainer,
+          {
+            height: searchBarHeight,
+            opacity: searchBarOpacity,
+            backgroundColor: theme.colors.surface,
+          },
+        ]}
+      >
+        <TextInput
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          placeholder="Search notes..."
+          style={[
+            styles.searchInput,
+            {
+              backgroundColor: theme.colors.background,
+              color: theme.colors.onSurface,
+            },
+          ]}
+          placeholderTextColor={theme.colors.onSurfaceVariant}
+          autoFocus={isSearchVisible}
+        />
+      </Animated.View>
+
+      {filteredNotes.length === 0 ? (
         <EmptyState />
       ) : (
         <MasonryFlashList
-          data={notes}
+          data={filteredNotes}
           numColumns={2}
           renderItem={({ item }) => (
             <NoteCard note={item} onDelete={deleteNote} />
@@ -96,18 +176,33 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
-    padding: 16,
+    justifyContent: "space-between",
+    padding: 12,
   },
   title: {
     textAlign: "center",
-    flex: 1,
-    marginRight: 24,
+    color: colors.jasper.DEFAULT,
+    fontWeight: "bold",
   },
   icon: {
     alignSelf: "flex-start",
     justifyContent: "flex-start",
+  },
+  searchIcon: {
+    width: 24,
+  },
+  searchContainer: {
+    paddingHorizontal: 16,
+    paddingBottom: 8,
+    overflow: "hidden",
+  },
+  searchInput: {
+    height: 40,
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    borderWidth: 1,
+    borderColor: colors.jasper[200],
   },
   emptyContainer: {
     flex: 1,
