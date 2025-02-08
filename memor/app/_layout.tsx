@@ -10,6 +10,7 @@ import { NotesProvider } from "@/features/notes/context/NotesContext";
 import { StripeProvider } from "@stripe/stripe-react-native";
 import { PaywallProvider } from "@/contexts/PaywallContext";
 import { PaperProvider } from "react-native-paper";
+import { OnboardingProvider } from "@/contexts/OnboardingContext";
 import React from "react";
 
 SplashScreen.preventAutoHideAsync();
@@ -40,12 +41,14 @@ export default function RootLayout() {
             publishableKey={process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY!}
           >
             <AuthProvider>
-              <PaywallProvider>
-                <NotesProvider>
-                  <StatusBar style="auto" />
-                  <Slot />
-                </NotesProvider>
-              </PaywallProvider>
+              <OnboardingProvider>
+                <PaywallProvider>
+                  <NotesProvider>
+                    <StatusBar style="auto" />
+                    <Slot />
+                  </NotesProvider>
+                </PaywallProvider>
+              </OnboardingProvider>
             </AuthProvider>
           </StripeProvider>
         </PaperProvider>

@@ -3,15 +3,22 @@ import { useAuth } from "@/services/auth/AuthProvider";
 import { Redirect } from "expo-router";
 import { EmailVerificationBanner } from "@/components/core/EmailVerificationBanner";
 import { ThemedStatusBar } from "@/components/core/ThemedStatusBar";
+import { useOnboarding } from "@/contexts/OnboardingContext";
+import { OnboardingScreen } from "@/components/onboarding/OnboardingScreen";
 import React from "react";
 
 export default function AppLayout() {
   const { user, isLoading } = useAuth();
+  const { hasSeenOnboarding } = useOnboarding();
 
   if (isLoading) return null;
 
   if (!user) {
     return <Redirect href="/(auth)/sign-in" />;
+  }
+
+  if (!hasSeenOnboarding) {
+    return <OnboardingScreen />;
   }
 
   return (
