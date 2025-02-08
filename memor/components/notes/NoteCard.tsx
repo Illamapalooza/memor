@@ -8,6 +8,11 @@ import { IconSymbol } from "../ui/IconSymbol";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Menu } from "react-native-paper";
 import { Divider } from "react-native-paper";
+import {
+  DropdownMenu,
+  MenuTrigger,
+  MenuOption,
+} from "../ui/DropDownMenu/DropdownMenu";
 
 type Props = {
   note: Note;
@@ -48,7 +53,48 @@ export function NoteCard({ note, onDelete }: Props) {
       >
         {note.content}
       </Text>
-      <Menu
+      <DropdownMenu
+        dropdownWidth={120}
+        triggerContainerStyle={{
+          alignSelf: "flex-end",
+        }}
+        visible={visible}
+        handleClose={closeMenu}
+        handleOpen={openMenu}
+        menuStyle={{
+          backgroundColor: theme.colors.background,
+          borderRadius: 10,
+        }}
+        trigger={
+          <MenuTrigger>
+            <Ionicons
+              name="ellipsis-horizontal-circle"
+              size={24}
+              color={theme.colors.primary}
+            />
+          </MenuTrigger>
+        }
+      >
+        <MenuOption
+          onSelect={handleDelete}
+          style={[
+            styles.menuOption,
+            { backgroundColor: theme.colors.background },
+          ]}
+        >
+          <Ionicons
+            name="trash-outline"
+            size={20}
+            color={theme.colors.primary}
+          />
+          <Text
+            style={[styles.menuOptionText, { color: theme.colors.primary }]}
+          >
+            Delete
+          </Text>
+        </MenuOption>
+      </DropdownMenu>
+      {/* <Menu
         visible={visible}
         onDismiss={closeMenu}
         contentStyle={{
@@ -74,7 +120,7 @@ export function NoteCard({ note, onDelete }: Props) {
           onPress={handleDelete}
           title="Delete"
         />
-      </Menu>
+      </Menu> */}
     </Pressable>
   );
 }
@@ -94,7 +140,13 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
-  deleteButton: {
-    alignItems: "flex-end",
+  menuOption: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  menuOptionText: {
+    fontSize: 16,
+    fontWeight: "bold",
   },
 });
