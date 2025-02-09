@@ -28,7 +28,13 @@
         <key>CFBundleURLSchemes</key>
         <array>
           <string>memor</string>
-          <string>com.yourdomain.memor</string>
+          <string>com.mymemor.memor</string>
+        </array>
+      </dict>
+      <dict>
+        <key>CFBundleURLSchemes</key>
+        <array>
+          <string>com.googleusercontent.apps.319369146329-b12r8r6mmlfc3h1j141ffj68qubpv3t8</string>
         </array>
       </dict>
     </array>

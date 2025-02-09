@@ -1,4 +1,4 @@
-package com.yourdomain.memor
+package com.mymemor.memor
 
 import android.app.Application
 import android.content.res.Configuration

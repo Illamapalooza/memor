@@ -1,4 +1,4 @@
-package com.yourdomain.memor
+package com.mymemor.memor
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build

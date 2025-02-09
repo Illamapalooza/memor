@@ -28,7 +28,7 @@
         <category android:name="android.intent.category.DEFAULT"/>
         <category android:name="android.intent.category.BROWSABLE"/>
         <data android:scheme="memor"/>
-        <data android:scheme="com.yourdomain.memor"/>
+        <data android:scheme="com.mymemor.memor"/>
       </intent-filter>
     </activity>
   </application>

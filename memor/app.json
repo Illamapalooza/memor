@@ -15,26 +15,28 @@
     "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.yourdomain.memor",
+      "bundleIdentifier": "com.mymemor.memor",
       "infoPlist": {
         "NSMicrophoneUsageDescription": "Allow Memor to access your microphone for audio recording",
         "NSCameraUsageDescription": "Allow Memor to access your camera",
         "NSPhotoLibraryUsageDescription": "Allow Memor to access your photos"
-      }
+      },
+      "googleServicesFile": "./GoogleService-Info.plist"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.yourdomain.memor",
+      "package": "com.mymemor.memor",
       "permissions": [
         "RECORD_AUDIO",
         "CAMERA",
         "READ_EXTERNAL_STORAGE",
         "WRITE_EXTERNAL_STORAGE",
         "MODIFY_AUDIO_SETTINGS"
-      ]
+      ],
+      "googleServicesFile": "./google-services.json"
     },
     "plugins": [
       "expo-router",
@@ -49,7 +51,8 @@
         {
           "microphonePermission": "Allow Memor to access your microphone for audio recording"
         }
-      ]
+      ],
+      ["@react-native-google-signin/google-signin"]
     ],
     "fonts": [
       {
