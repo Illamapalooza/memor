@@ -52,7 +52,7 @@
           "microphonePermission": "Allow Memor to access your microphone for audio recording"
         }
       ],
-      ["@react-native-google-signin/google-signin"]
+      "@react-native-google-signin/google-signin"
     ],
     "fonts": [
       {
