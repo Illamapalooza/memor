@@ -853,3 +853,8 @@
 {"level":"info","message":"Deleted 1 vectors with filter:","noteId":"ya9oAcqN04rdoZnPqPB3","timestamp":"2025-02-13T18:14:22.598Z"}
 {"level":"info","message":"Vectorized/Updated note: T6009ydcGaw0KD2P3e6W","timestamp":"2025-02-13T18:14:23.461Z"}
 {"level":"info","message":"Vectorized/Updated note: ya9oAcqN04rdoZnPqPB3","timestamp":"2025-02-13T18:14:23.716Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-13T20:25:23.766Z"}
+{"level":"info","message":"Deleted 1 vectors with filter:","noteId":"ya9oAcqN04rdoZnPqPB3","timestamp":"2025-02-13T20:25:29.115Z"}
+{"level":"info","message":"Deleted 1 vectors with filter:","noteId":"T6009ydcGaw0KD2P3e6W","timestamp":"2025-02-13T20:25:29.750Z"}
+{"level":"info","message":"Vectorized/Updated note: ya9oAcqN04rdoZnPqPB3","timestamp":"2025-02-13T20:25:30.930Z"}
+{"level":"info","message":"Vectorized/Updated note: T6009ydcGaw0KD2P3e6W","timestamp":"2025-02-13T20:25:31.696Z"}
