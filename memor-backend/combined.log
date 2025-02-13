@@ -692,3 +692,41 @@
 {"level":"info","message":"Vectorized/Updated note: wG5dwrLpujSA6VX1MMv3","timestamp":"2025-02-08T13:22:36.700Z"}
 {"level":"info","message":"Deleted 1 vectors with filter:","noteId":"yoOFGJexV8OA7HfbCxl5","timestamp":"2025-02-08T14:59:25.063Z"}
 {"level":"info","message":"Deleted vectors for note: yoOFGJexV8OA7HfbCxl5","timestamp":"2025-02-08T14:59:25.064Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-10T06:07:27.339Z"}
+{"level":"info","message":"Deleted 1 vectors with filter:","noteId":"LuPV8o64P41Ibi2NXgNu","timestamp":"2025-02-10T06:07:42.667Z"}
+{"level":"info","message":"Deleted 1 vectors with filter:","noteId":"bxwOklS7FzDBm892e3WI","timestamp":"2025-02-10T06:07:42.947Z"}
+{"level":"info","message":"Deleted 1 vectors with filter:","noteId":"0Y501giRQxRFrIblVVq4","timestamp":"2025-02-10T06:07:43.217Z"}
+{"level":"info","message":"Deleted 1 vectors with filter:","noteId":"hNU3rwpkMT69z0s0cYXQ","timestamp":"2025-02-10T06:07:44.174Z"}
+{"level":"info","message":"Vectorized/Updated note: bxwOklS7FzDBm892e3WI","timestamp":"2025-02-10T06:07:45.070Z"}
+{"level":"info","message":"Vectorized/Updated note: hNU3rwpkMT69z0s0cYXQ","timestamp":"2025-02-10T06:07:45.671Z"}
+{"level":"info","message":"Vectorized/Updated note: 0Y501giRQxRFrIblVVq4","timestamp":"2025-02-10T06:07:46.197Z"}
+{"level":"info","message":"Vectorized/Updated note: LuPV8o64P41Ibi2NXgNu","timestamp":"2025-02-10T06:07:55.686Z"}
+{"level":"info","message":"Created checkout session for customer cus_RhPPkaDhT6PXmJ","timestamp":"2025-02-10T07:42:38.719Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-13T12:52:27.389Z"}
+{"level":"info","message":"Deleted 1 vectors with filter:","noteId":"0Y501giRQxRFrIblVVq4","timestamp":"2025-02-13T12:52:33.026Z"}
+{"level":"info","message":"Deleted 1 vectors with filter:","noteId":"hNU3rwpkMT69z0s0cYXQ","timestamp":"2025-02-13T12:52:33.117Z"}
+{"level":"info","message":"Deleted 1 vectors with filter:","noteId":"LuPV8o64P41Ibi2NXgNu","timestamp":"2025-02-13T12:52:33.682Z"}
+{"level":"info","message":"Deleted 1 vectors with filter:","noteId":"bxwOklS7FzDBm892e3WI","timestamp":"2025-02-13T12:52:33.690Z"}
+{"level":"info","message":"Vectorized/Updated note: hNU3rwpkMT69z0s0cYXQ","timestamp":"2025-02-13T12:52:34.386Z"}
+{"level":"info","message":"Vectorized/Updated note: 0Y501giRQxRFrIblVVq4","timestamp":"2025-02-13T12:52:34.765Z"}
+{"level":"info","message":"Vectorized/Updated note: LuPV8o64P41Ibi2NXgNu","timestamp":"2025-02-13T12:52:35.386Z"}
+{"level":"info","message":"Vectorized/Updated note: bxwOklS7FzDBm892e3WI","timestamp":"2025-02-13T12:52:35.773Z"}
+{"level":"info","message":"Deleted 1 vectors with filter:","noteId":"hNU3rwpkMT69z0s0cYXQ","timestamp":"2025-02-13T13:34:36.840Z"}
+{"level":"info","message":"Deleted vectors for note: hNU3rwpkMT69z0s0cYXQ","timestamp":"2025-02-13T13:34:36.841Z"}
+{"level":"info","message":"Deleted 1 vectors with filter:","noteId":"LuPV8o64P41Ibi2NXgNu","timestamp":"2025-02-13T13:38:39.765Z"}
+{"level":"info","message":"Deleted vectors for note: LuPV8o64P41Ibi2NXgNu","timestamp":"2025-02-13T13:38:39.765Z"}
+{"level":"info","message":"Deleted 1 vectors with filter:","noteId":"bxwOklS7FzDBm892e3WI","timestamp":"2025-02-13T14:00:26.986Z"}
+{"level":"info","message":"Deleted vectors for note: bxwOklS7FzDBm892e3WI","timestamp":"2025-02-13T14:00:26.987Z"}
+{"level":"info","message":"Deleted 1 vectors with filter:","noteId":"0Y501giRQxRFrIblVVq4","timestamp":"2025-02-13T14:07:24.404Z"}
+{"level":"info","message":"Vectorized/Updated note: 0Y501giRQxRFrIblVVq4","timestamp":"2025-02-13T14:07:25.734Z"}
+{"level":"info","message":"Deleted 1 vectors with filter:","noteId":"0Y501giRQxRFrIblVVq4","timestamp":"2025-02-13T14:15:28.347Z"}
+{"level":"info","message":"Vectorized/Updated note: 0Y501giRQxRFrIblVVq4","timestamp":"2025-02-13T14:15:29.870Z"}
+{"level":"info","message":"Deleted 1 vectors with filter:","noteId":"0Y501giRQxRFrIblVVq4","timestamp":"2025-02-13T14:18:10.411Z"}
+{"level":"info","message":"Vectorized/Updated note: 0Y501giRQxRFrIblVVq4","timestamp":"2025-02-13T14:18:11.746Z"}
+{"level":"info","message":"Deleted 1 vectors with filter:","noteId":"0Y501giRQxRFrIblVVq4","timestamp":"2025-02-13T14:45:44.669Z"}
+{"level":"info","message":"Deleted vectors for note: 0Y501giRQxRFrIblVVq4","timestamp":"2025-02-13T14:45:44.669Z"}
+{"level":"info","message":"Vectorized/Updated note: mXWoFr4QWArV3WG5was3","timestamp":"2025-02-13T14:49:23.762Z"}
+{"level":"info","message":"Vectorized/Updated note: ya9oAcqN04rdoZnPqPB3","timestamp":"2025-02-13T14:49:28.562Z"}
+{"level":"info","message":"Deleted 1 vectors with filter:","noteId":"mXWoFr4QWArV3WG5was3","timestamp":"2025-02-13T14:49:53.339Z"}
+{"level":"info","message":"Deleted vectors for note: mXWoFr4QWArV3WG5was3","timestamp":"2025-02-13T14:49:53.339Z"}
+{"level":"info","message":"Vectorized/Updated note: T6009ydcGaw0KD2P3e6W","timestamp":"2025-02-13T14:50:57.554Z"}

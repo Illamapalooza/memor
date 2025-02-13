@@ -158,8 +158,8 @@ try {
   - Monthly subscription: $9.99/month
   - Annual subscription: $99/year
 - **Features by Tier**:
-  - Free: Basic note-taking, limited AI queries (5) Show Paywall
-  - Pro: Unlimited AI queries, advanced RAG features
+  - Free: Basic note-taking, limited AI queries (5) lifetime Show Paywall, 10 notes per month
+  - Pro: 24 queries per day, 10 gigabytes of storage, advanced RAG features
 
 ### ASK AI FEATURE
 

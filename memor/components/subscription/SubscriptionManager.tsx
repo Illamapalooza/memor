@@ -138,7 +138,7 @@ export const SubscriptionManager = () => {
               variant="bodyMedium"
               style={{ color: theme.colors.onSurface }}
             >
-              • 5 AI queries per day
+              • 5 AI queries
             </Text>
             <Text
               variant="bodyMedium"

@@ -11,6 +11,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { colors } from "@/utils/theme";
 import { useTTS } from "@/hooks/useTTS";
 import { useAuthOperations } from "@/hooks/useAuth";
+import { StorageUsage } from "@/components/settings/StorageUsage";
 
 type SettingItemProps = {
   title: string;
@@ -170,6 +171,7 @@ export default function SettingsScreen() {
             onPress={() => router.push("/settings/terms")}
           />
         </List.Section>
+        <StorageUsage />
 
         <List.Section>
           <SettingItem title="Sign Out" icon="log-out" onPress={logout} />

@@ -43,6 +43,7 @@ export type UserProfile = {
     aiQueriesUsed: number;
     audioRecordingsUsed: number;
     notesCreated: number;
+    storageUsed: number;
     lastAiQuery?: number;
     lastAudioRecording?: number;
     lastPaywallShow?: number;

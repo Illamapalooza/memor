@@ -1,13 +1,11 @@
 import React, { useState } from "react";
-import { StyleSheet, Pressable, Button } from "react-native";
+import { StyleSheet, Pressable, Button, View } from "react-native";
 import { Text } from "@/components/ui/Text/Text";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { router } from "expo-router";
 import type { Note } from "@/types/note";
-import { IconSymbol } from "../ui/IconSymbol";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Menu } from "react-native-paper";
-import { Divider } from "react-native-paper";
 import {
   DropdownMenu,
   MenuTrigger,
@@ -53,74 +51,66 @@ export function NoteCard({ note, onDelete }: Props) {
       >
         {note.content}
       </Text>
-      <DropdownMenu
-        dropdownWidth={120}
-        triggerContainerStyle={{
-          alignSelf: "flex-end",
-        }}
-        visible={visible}
-        handleClose={closeMenu}
-        handleOpen={openMenu}
-        menuStyle={{
-          backgroundColor: theme.colors.background,
-          borderRadius: 10,
-        }}
-        trigger={
-          <MenuTrigger>
+
+      <View style={{ position: "absolute", bottom: 12, right: 12 }}>
+        <Menu
+          visible={visible}
+          onDismiss={closeMenu}
+          mode="elevated"
+          anchorPosition="bottom"
+          style={{
+            marginTop: 24,
+            marginRight: 12,
+          }}
+          theme={{
+            ...theme,
+            colors: {
+              ...theme.colors,
+            },
+          }}
+          contentStyle={[
+            styles.menu,
+            { backgroundColor: theme.colors.surface },
+          ]}
+          anchor={
             <Ionicons
               name="ellipsis-horizontal-circle"
               size={24}
               color={theme.colors.primary}
+              style={{ marginTop: 24, alignSelf: "flex-end" }}
+              onPress={(e) => {
+                e.stopPropagation();
+                openMenu();
+              }}
             />
-          </MenuTrigger>
-        }
-      >
-        <MenuOption
-          onSelect={handleDelete}
-          style={[
-            styles.menuOption,
-            { backgroundColor: theme.colors.background },
-          ]}
+          }
         >
-          <Ionicons
-            name="trash-outline"
-            size={20}
-            color={theme.colors.primary}
-          />
-          <Text
-            style={[styles.menuOptionText, { color: theme.colors.primary }]}
-          >
-            Delete
-          </Text>
-        </MenuOption>
-      </DropdownMenu>
-      {/* <Menu
-        visible={visible}
-        onDismiss={closeMenu}
-        contentStyle={{
-          backgroundColor: theme.colors.background,
-          boxShadow: "none",
-          borderRadius: 12,
-        }}
-        anchor={
-          <Ionicons
-            name="ellipsis-horizontal-circle"
-            size={24}
-            color={theme.colors.primary}
-            style={{ marginTop: 24, alignSelf: "flex-end" }}
-            onPress={(e) => {
-              e.stopPropagation();
-              openMenu();
+          <Menu.Item
+            leadingIcon="delete-outline"
+            theme={{
+              ...theme,
+              colors: {
+                ...theme.colors,
+                onSurfaceVariant: theme.colors.error,
+              },
             }}
+            style={{
+              paddingHorizontal: 4,
+              paddingVertical: 0,
+              width: "auto",
+              height: "auto",
+              backgroundColor: "transparent",
+            }}
+            onPress={handleDelete}
+            title="Delete"
+            titleStyle={{
+              color: theme.colors.error,
+              fontFamily: "Nunito-thin",
+            }}
+            contentStyle={[styles.menuItem, { backgroundColor: "transparent" }]}
           />
-        }
-      >
-        <Menu.Item
-          leadingIcon="delete-outline"
-          onPress={handleDelete}
-          title="Delete"
-        />
-      </Menu> */}
+        </Menu>
+      </View>
     </Pressable>
   );
 }
@@ -128,6 +118,7 @@ export function NoteCard({ note, onDelete }: Props) {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
+    paddingBottom: 50,
     borderRadius: 12,
     gap: 8,
     margin: 6,
@@ -140,13 +131,30 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
+  menu: {
+    boxShadow: "none",
+    borderRadius: 12,
+    padding: 0,
+    width: "auto",
+    maxWidth: 220,
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+  },
   menuOption: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
   },
   menuOptionText: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: "bold",
+    textAlign: "left",
+  },
+  menuItem: {
+    paddingHorizontal: 0,
+    paddingVertical: 0,
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "flex-start",
   },
 });

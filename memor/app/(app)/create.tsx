@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState } from "react";
 import {
   View,
   StyleSheet,
@@ -9,53 +9,43 @@ import {
   Modal,
   Alert,
 } from "react-native";
-import { router, useLocalSearchParams } from "expo-router";
+import { router } from "expo-router";
 import { useNotes } from "@/features/notes/hooks/useNotes";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { Text } from "@/components/ui/Text/Text";
 import {
-  DestructiveButton,
   GhostButton,
   OutlineButton,
   PrimaryButton,
-  SecondaryButton,
 } from "@/components/ui/Button";
-import { IconSymbol } from "@/components/ui/IconSymbol";
-import { useAutoSave } from "@/features/notes/hooks/useAutoSave";
+import { SafeAreaView } from "react-native-safe-area-context";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { colors } from "@/utils/theme";
 import { PaywallGuard } from "@/components/core/PaywallGuard";
 import { useAuth } from "@/services/auth/AuthProvider";
 import { UsageService } from "@/services/usage/usage.service";
-import Ionicons from "@expo/vector-icons/Ionicons";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { usePaywall } from "@/contexts/PaywallContext";
 
 export default function CreateScreen() {
-  const { title: initialTitle, content: initialContent } =
-    useLocalSearchParams<{
-      title?: string;
-      content?: string;
-    }>();
-
-  const [title, setTitle] = useState(initialTitle || "");
-  const [content, setContent] = useState(initialContent || "");
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showDiscardModal, setShowDiscardModal] = useState(false);
-  const [isSaved, setIsSaved] = useState(false);
+  const [titleHeight, setTitleHeight] = useState(40);
   const { createNote } = useNotes();
   const theme = useAppTheme();
   const { userProfile } = useAuth();
-
-  const { noteIdRef, isSaving } = useAutoSave({ title, content, isNew: true });
+  const { checkFeatureAccess } = usePaywall();
 
   const hasUnsavedChanges = title.trim() !== "" || content.trim() !== "";
 
-  const handleBack = useCallback(() => {
-    if (hasUnsavedChanges && !isSaved) {
+  const handleBack = () => {
+    if (hasUnsavedChanges) {
       setShowDiscardModal(true);
     } else {
       router.back();
     }
-  }, [hasUnsavedChanges, isSaved]);
+  };
 
   const handleDiscard = () => {
     setShowDiscardModal(false);
@@ -64,16 +54,20 @@ export default function CreateScreen() {
 
   const handleSave = async () => {
     if (!userProfile?.id) return;
+    if (!title.trim() || !content.trim()) {
+      Alert.alert("Error", "Title and content are required");
+      return;
+    }
 
     try {
-      setIsLoading(true);
-      // Track usage before saving
-      await UsageService.incrementUsage(userProfile.id, "notes");
-
-      if (!noteIdRef.current) {
-        await createNote(title.trim(), content.trim());
+      const hasAccess = await checkFeatureAccess("storage");
+      if (!hasAccess) {
+        return;
       }
-      setIsSaved(true);
+
+      setIsLoading(true);
+      await createNote(title.trim(), content.trim());
+      router.back();
     } catch (error) {
       console.error("Failed to create note:", error);
       Alert.alert("Error", "Failed to save note. Please try again.");
@@ -93,7 +87,7 @@ export default function CreateScreen() {
       style={[styles.container, { backgroundColor: theme.colors.background }]}
     >
       {shouldShowPaywall() ? (
-        <PaywallGuard feature="notes">
+        <PaywallGuard feature="storage">
           <CreateNoteContent
             title={title}
             content={content}
@@ -102,7 +96,6 @@ export default function CreateScreen() {
             handleSave={handleSave}
             handleBack={handleBack}
             isLoading={isLoading}
-            isSaving={isSaving}
           />
         </PaywallGuard>
       ) : (
@@ -114,7 +107,6 @@ export default function CreateScreen() {
           handleSave={handleSave}
           handleBack={handleBack}
           isLoading={isLoading}
-          isSaving={isSaving}
         />
       )}
 
@@ -166,7 +158,6 @@ function CreateNoteContent({
   handleSave,
   handleBack,
   isLoading,
-  isSaving,
 }: {
   title: string;
   content: string;
@@ -175,9 +166,9 @@ function CreateNoteContent({
   handleSave: () => void;
   handleBack: () => void;
   isLoading: boolean;
-  isSaving: boolean;
 }) {
   const theme = useAppTheme();
+  const [titleHeight, setTitleHeight] = useState(40);
 
   return (
     <>
@@ -196,16 +187,21 @@ function CreateNoteContent({
           >
             New Note
           </Text>
-          <GhostButton
+          <PrimaryButton
             onPress={handleSave}
-            loading={isLoading || isSaving}
-            disabled={!title.trim() || !content.trim() || isSaving}
+            loading={isLoading}
+            disabled={!title.trim() || !content.trim()}
             size="large"
-            style={styles.saveButton}
-            textStyle={{ color: theme.colors.primary }}
+            style={[styles.saveButton, { backgroundColor: "transparent" }]}
+            textStyle={{
+              color:
+                !title.trim() || !content.trim()
+                  ? theme.colors.surfaceDisabled
+                  : theme.colors.primary,
+            }}
           >
-            {isSaving ? "Saving..." : "Save"}
-          </GhostButton>
+            Save
+          </PrimaryButton>
         </View>
 
         <View style={styles.content}>
@@ -213,8 +209,18 @@ function CreateNoteContent({
             placeholder="Title"
             value={title}
             onChangeText={setTitle}
-            style={[styles.titleInput, { color: theme.colors.onSurface }]}
+            style={[
+              styles.titleInput,
+              {
+                color: theme.colors.onSurface,
+                height: Math.max(40, titleHeight),
+              },
+            ]}
             placeholderTextColor={colors.blackOlive[800]}
+            multiline={true}
+            onContentSizeChange={(event) =>
+              setTitleHeight(event.nativeEvent.contentSize.height)
+            }
           />
           <TextInput
             placeholder="Start writing..."
@@ -254,6 +260,7 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontFamily: "Nunito-Bold",
     padding: 16,
+    textAlignVertical: "top",
   },
   contentInput: {
     flex: 1,

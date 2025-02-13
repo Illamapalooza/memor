@@ -147,6 +147,11 @@ export function AudioRecorder({
         await onTranscribed(result);
       } else {
         // Default note creation behavior
+        UsageService.incrementUsage(
+          userProfile?.id || "",
+          "audioRecordings",
+          1
+        );
         router.push({
           pathname: "/create",
           params: {
@@ -310,7 +315,7 @@ export function AudioRecorder({
             onPress={() => handleTranscribe(recordingUri)}
             loading={isTranscribing}
           >
-            Transcribe
+            Generate
           </PrimaryButton>
         </View>
       ) : (

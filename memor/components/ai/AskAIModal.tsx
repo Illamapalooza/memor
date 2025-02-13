@@ -109,6 +109,8 @@ export const AskAIModal = ({ visible, onClose }: Props) => {
             }
           }, 500);
         }
+
+        UsageService.incrementUsage(userProfile?.id || "", "aiQueries", 1);
       }
     } catch (error) {
       console.error("Error in handleSubmit:", error);
@@ -156,15 +158,6 @@ export const AskAIModal = ({ visible, onClose }: Props) => {
       controller.abort();
       clearInterval(interval);
     };
-  };
-
-  const handleAudioSave = async (uri: string) => {
-    setShowRecorder(false);
-    setQuery("Transcribed audio query...");
-    setResponse("streaming");
-    simulateStreamingResponse(
-      "I've processed your audio query and analyzed your notes. Here are the key findings..."
-    );
   };
 
   const handleCopyResponse = () => {

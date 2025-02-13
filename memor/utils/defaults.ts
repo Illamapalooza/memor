@@ -1,7 +1,7 @@
 export const DEFAULT_USAGE_LIMITS = {
   aiQueriesUsed: 0,
   audioRecordingsUsed: 0,
-  notesCreated: 0,
+  storageUsed: 0,
   lastAiQuery: 0,
   lastAudioRecording: 0,
   lastPaywallShow: 0,

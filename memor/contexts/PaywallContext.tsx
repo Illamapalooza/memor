@@ -6,10 +6,10 @@ import { SubscriptionService } from "@/services/subscription/subscription.servic
 import { DEFAULT_SUBSCRIPTION } from "@/utils/defaults";
 
 type PaywallContextType = {
-  showPaywall: (feature?: "aiQueries" | "audioRecordings" | "notes") => void;
+  showPaywall: (feature?: "aiQueries" | "audioRecordings" | "storage") => void;
   hidePaywall: () => void;
   checkFeatureAccess: (
-    feature: "aiQueries" | "audioRecordings" | "notes"
+    feature: "aiQueries" | "audioRecordings" | "storage"
   ) => Promise<boolean>;
 };
 
@@ -18,35 +18,12 @@ const PaywallContext = createContext<PaywallContextType | null>(null);
 export function PaywallProvider({ children }: { children: React.ReactNode }) {
   const [isVisible, setIsVisible] = useState(false);
   const [currentFeature, setCurrentFeature] = useState<
-    "aiQueries" | "audioRecordings" | "notes" | undefined
+    "aiQueries" | "audioRecordings" | "storage" | undefined
   >();
   const { userProfile } = useAuth();
 
-  const checkFeatureAccess = useCallback(
-    async (
-      feature: "aiQueries" | "audioRecordings" | "notes"
-    ): Promise<boolean> => {
-      if (!userProfile) return false;
-
-      const subscription = await SubscriptionService.getCurrentSubscription();
-
-      // If user has an active pro subscription, they have access to all features
-      if (
-        SubscriptionService.isSubscriptionActive(
-          subscription || DEFAULT_SUBSCRIPTION
-        )
-      ) {
-        return true;
-      }
-
-      // Otherwise, check usage limits for free tier
-      return UsageService.checkUsageLimit(userProfile, feature);
-    },
-    [userProfile]
-  );
-
   const showPaywall = useCallback(
-    async (feature?: "aiQueries" | "audioRecordings" | "notes") => {
+    async (feature?: "aiQueries" | "audioRecordings" | "storage") => {
       if (!userProfile) return;
 
       const subscription = await SubscriptionService.getCurrentSubscription();
@@ -67,6 +44,40 @@ export function PaywallProvider({ children }: { children: React.ReactNode }) {
     setCurrentFeature(undefined);
   }, []);
 
+  const checkFeatureAccess = useCallback(
+    async (
+      feature: "aiQueries" | "audioRecordings" | "storage"
+    ): Promise<boolean> => {
+      if (!userProfile) return false;
+
+      const subscription = await SubscriptionService.getCurrentSubscription();
+
+      // If user has an active pro subscription, they have access to all features
+      if (
+        SubscriptionService.isSubscriptionActive(
+          subscription || DEFAULT_SUBSCRIPTION
+        )
+      ) {
+        return true;
+      }
+
+      // Check usage limits
+      const hasAccess = await UsageService.checkUsageLimit(
+        userProfile.id,
+        feature
+      );
+
+      if (!hasAccess) {
+        // Show paywall if access is denied
+        showPaywall(feature);
+        return false;
+      }
+
+      return true;
+    },
+    [userProfile, showPaywall]
+  );
+
   return (
     <PaywallContext.Provider
       value={{ showPaywall, hidePaywall, checkFeatureAccess }}
@@ -78,7 +89,7 @@ export function PaywallProvider({ children }: { children: React.ReactNode }) {
         feature={currentFeature}
         permanent={
           currentFeature && userProfile
-            ? !UsageService.checkUsageLimit(userProfile, currentFeature)
+            ? !UsageService.checkUsageLimit(userProfile.id, currentFeature)
             : false
         }
       />

@@ -76,6 +76,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 aiQueriesUsed: 0,
                 audioRecordingsUsed: 0,
                 notesCreated: 0,
+                storageUsed: 0,
               },
               settings: {
                 theme: "system",
@@ -184,6 +185,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               aiQueriesUsed: 0,
               audioRecordingsUsed: 0,
               notesCreated: 0,
+              storageUsed: 0,
             },
             settings: {
               theme: "system",

@@ -21,15 +21,16 @@ import {
 } from "@/components/ui/Button";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { IconSymbol } from "@/components/ui/IconSymbol";
-import { useAutoSave } from "@/features/notes/hooks/useAutoSave";
 import { colors } from "@/utils/theme";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { usePaywall } from "@/contexts/PaywallContext";
 
 export default function EditNoteScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { notes, updateNote } = useNotes();
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
+  const { checkFeatureAccess } = usePaywall();
 
   const note = notes.find((n) => n.id === id);
 
@@ -37,16 +38,7 @@ export default function EditNoteScreen() {
   const [content, setContent] = useState(note?.content ?? "");
   const [isLoading, setIsLoading] = useState(false);
   const [showDiscardModal, setShowDiscardModal] = useState(false);
-  const [isSaved, setIsSaved] = useState(true);
-
-  // Use auto-save hook
-  useAutoSave({ id, title, content });
-
-  useEffect(() => {
-    const hasChanges =
-      title.trim() !== note?.title || content.trim() !== note?.content;
-    setIsSaved(!hasChanges);
-  }, [title, content, note]);
+  const [titleHeight, setTitleHeight] = useState(40);
 
   useEffect(() => {
     if (!note) {
@@ -72,16 +64,24 @@ export default function EditNoteScreen() {
   };
 
   const handleSave = async () => {
-    if (!id || !title.trim() || !content.trim()) return;
+    if (!id || !title.trim() || !content.trim()) {
+      Alert.alert("Error", "Title and content are required");
+      return;
+    }
 
     try {
+      // Check storage access before saving
+      const hasAccess = await checkFeatureAccess("storage");
+      if (!hasAccess) {
+        return; // Paywall will be shown by the PaywallGuard
+      }
+
       setIsLoading(true);
       await updateNote(id, title.trim(), content.trim());
-      setIsSaved(true);
-      // Note: We don't navigate back anymore
+      router.back();
     } catch (error) {
       console.error("Failed to update note:", error);
-      Alert.alert("Error", "Failed to update note. Please try again.");
+      Alert.alert("Error", "Failed to save note. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -115,14 +115,25 @@ export default function EditNoteScreen() {
             disabled={!title.trim() || !content.trim() || !hasUnsavedChanges}
             size="large"
             style={styles.saveButton}
-            textStyle={{ color: theme.colors.primary }}
+            textStyle={{
+              color:
+                !title.trim() || !content.trim() || !hasUnsavedChanges
+                  ? theme.colors.surfaceDisabled
+                  : theme.colors.primary,
+            }}
           >
-            {isSaved ? "Saved" : "Save"}
+            Save
           </GhostButton>
         </View>
 
         <TextInput
-          style={[styles.titleInput, { color: theme.colors.onSurface }]}
+          style={[
+            styles.titleInput,
+            {
+              color: theme.colors.onSurface,
+              height: Math.max(40, titleHeight),
+            },
+          ]}
           placeholder="Untitled"
           placeholderTextColor={colors.blackOlive[800]}
           value={title}
@@ -130,6 +141,10 @@ export default function EditNoteScreen() {
           maxLength={100}
           cursorColor={theme.colors.primary}
           selectionColor={theme.colors.primary}
+          multiline={true}
+          onContentSizeChange={(event) =>
+            setTitleHeight(event.nativeEvent.contentSize.height)
+          }
         />
 
         <TextInput
@@ -210,6 +225,7 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontFamily: "Nunito-Bold",
     padding: 16,
+    textAlignVertical: "top",
   },
   contentInput: {
     flex: 1,

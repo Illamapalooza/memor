@@ -10,7 +10,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 type PaywallModalProps = {
   visible: boolean;
   onClose: () => void;
-  feature?: "aiQueries" | "audioRecordings" | "notes";
+  feature?: "aiQueries" | "audioRecordings" | "storage";
   permanent?: boolean;
 };
 
@@ -28,11 +28,11 @@ export const PaywallModal = ({
     if (!feature) return "";
     switch (feature) {
       case "aiQueries":
-        return `${subscriptionLimits.basic.aiQueriesPerDay} AI queries per day`;
+        return `${subscriptionLimits.basic.aiQueriesTotal} AI queries`;
       case "audioRecordings":
-        return `${subscriptionLimits.basic.audioRecordingsPerDay} audio recordings per day`;
-      case "notes":
-        return `${subscriptionLimits.basic.notesPerMonth} notes per month`;
+        return `${subscriptionLimits.basic.audioRecordingsTotal} audio recordings`;
+      case "storage":
+        return `${subscriptionLimits.basic.storageLimit} storage`;
       default:
         return "";
     }
@@ -47,9 +47,9 @@ export const PaywallModal = ({
 
   const getMessage = () => {
     if (permanent) {
-      return `You've reached your free limit of ${getFeatureLimit()}. Upgrade to Pro for unlimited access.`;
+      return `You've reached your free limit of ${getFeatureLimit()}. Upgrade to Pro for more access.`;
     }
-    return "Get unlimited access to all features and take your productivity to the next level.";
+    return "Get more access to all features and take your productivity to the next level.";
   };
 
   return (
@@ -88,13 +88,13 @@ export const PaywallModal = ({
               Pro Features:
             </Text>
             <Text variant="bodyMedium" style={{ color: theme.colors.primary }}>
-              • Unlimited AI queries
+              • 24 AI queries per day (1 query per hour)
             </Text>
             <Text variant="bodyMedium" style={{ color: theme.colors.primary }}>
               • Unlimited audio recordings
             </Text>
             <Text variant="bodyMedium" style={{ color: theme.colors.primary }}>
-              • Unlimited notes
+              • Up to 5 GB of storage
             </Text>
             <Text variant="bodyMedium" style={{ color: theme.colors.primary }}>
               • Advanced features
