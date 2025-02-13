@@ -12,7 +12,9 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.mymemor.memor",
@@ -22,7 +24,9 @@
         "NSPhotoLibraryUsageDescription": "Allow Memor to access your photos"
       },
       "googleServicesFile": "./GoogleService-Info.plist",
-      "associatedDomains": ["applinks:memor.app"]
+      "associatedDomains": [
+        "applinks:memor.app"
+      ]
     },
     "android": {
       "adaptiveIcon": {
@@ -35,7 +39,9 @@
         "CAMERA",
         "READ_EXTERNAL_STORAGE",
         "WRITE_EXTERNAL_STORAGE",
-        "MODIFY_AUDIO_SETTINGS"
+        "MODIFY_AUDIO_SETTINGS",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
       ],
       "googleServicesFile": "./google-services.json",
       "intentFilters": [
@@ -53,7 +59,10 @@
               "host": "*"
             }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ]
     },
@@ -106,6 +115,14 @@
         "asset": "./assets/fonts/Inter-Bold.otf",
         "family": "Inter-Bold"
       }
-    ]
+    ],
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "4ecfbfc9-dff0-49bd-b664-490892deab53"
+      }
+    }
   }
 }
