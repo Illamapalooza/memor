@@ -21,7 +21,8 @@
         "NSCameraUsageDescription": "Allow Memor to access your camera",
         "NSPhotoLibraryUsageDescription": "Allow Memor to access your photos"
       },
-      "googleServicesFile": "./GoogleService-Info.plist"
+      "googleServicesFile": "./GoogleService-Info.plist",
+      "associatedDomains": ["applinks:memor.app"]
     },
     "android": {
       "adaptiveIcon": {
@@ -36,7 +37,25 @@
         "WRITE_EXTERNAL_STORAGE",
         "MODIFY_AUDIO_SETTINGS"
       ],
-      "googleServicesFile": "./google-services.json"
+      "googleServicesFile": "./google-services.json",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "memor.app",
+              "pathPrefix": "/"
+            },
+            {
+              "scheme": "memor",
+              "host": "*"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
     },
     "plugins": [
       "expo-router",

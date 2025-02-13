@@ -3,8 +3,10 @@ import { db } from "@/services/db/firebase";
 import { doc, setDoc, getDoc, onSnapshot } from "firebase/firestore";
 import axios from "axios";
 import * as WebBrowser from "expo-web-browser";
-import { Platform } from "react-native";
+import { Platform, Linking } from "react-native";
 import { DEFAULT_SUBSCRIPTION } from "@/utils/defaults";
+import Constants from "expo-constants";
+import { router, useRouter } from "expo-router";
 
 export type SubscriptionTier = "free" | "pro";
 
@@ -243,43 +245,66 @@ export class SubscriptionService {
   }
 
   static async startCheckout(plan: "monthly" | "yearly") {
-    const url =
-      Platform.OS === "ios"
-        ? "http://localhost:3000/api/subscriptions/create-checkout-session"
-        : "http://10.0.2.2:3000/api/subscriptions/create-checkout-session";
-
     const user = auth.currentUser;
-    const PRICE_ID = process.env.EXPO_PUBLIC_STRIPE_MONTHLY_PRICE_ID;
-    const PRICE_ID_YEARLY = process.env.EXPO_PUBLIC_STRIPE_YEARLY_PRICE_ID;
     if (!user) throw new Error("User not authenticated");
 
     try {
-      // Create instance to use instance method
       const subscriptionInstance = new SubscriptionService();
       const customerId = await subscriptionInstance.ensureCustomer(user);
 
-      // Get price ID based on plan
-      const priceId = plan === "monthly" ? PRICE_ID : PRICE_ID_YEARLY;
+      const priceId =
+        plan === "monthly"
+          ? process.env.EXPO_PUBLIC_STRIPE_MONTHLY_PRICE_ID
+          : process.env.EXPO_PUBLIC_STRIPE_YEARLY_PRICE_ID;
 
-      // Create checkout session
-      const { data } = await axios.post(url, {
-        customerId,
-        priceId,
-        successUrl:
-          Platform.OS === "ios"
-            ? "http://localhost:3000/api/subscription-success"
-            : "http://10.0.2.2:3000/api/subscription-success",
-        cancelUrl:
-          Platform.OS === "ios"
-            ? "http://localhost:3000/api/subscription-cancel"
-            : "http://10.0.2.2:3000/api/subscription-cancel",
+      const baseUrl = Platform.select({
+        ios: "http://localhost:3000",
+        android: "http://10.0.2.2:3000",
       });
 
-      // Open checkout URL in browser
+      // Create fully qualified URLs with https://
+      const appDomain = "memor.app"; // Your app's domain
+      const successUrl = encodeURIComponent(
+        `https://${appDomain}/subscription-success`
+      );
+      const cancelUrl = encodeURIComponent(
+        `https://${appDomain}/subscription-cancel`
+      );
+
+      const { data } = await axios.post(
+        `${baseUrl}/api/subscriptions/create-checkout-session`,
+        {
+          customerId,
+          priceId,
+          successUrl,
+          cancelUrl,
+        }
+      );
+
       if (Platform.OS === "web") {
         window.location.href = data.url;
       } else {
-        await WebBrowser.openBrowserAsync(data.url);
+        const result = await WebBrowser.openAuthSessionAsync(
+          data.url,
+          `${Constants.expoConfig?.scheme}://`
+        );
+
+        // Handle the redirect back to app
+        if (result.type === "success") {
+          const url = result.url;
+          // Parse the URL to check if it contains success parameters
+          const params = new URL(url).searchParams;
+          const sessionId = params.get("session_id");
+
+          if (sessionId) {
+            router.replace({
+              pathname: "/subscription-success",
+              params: { session_id: sessionId },
+            });
+          } else {
+            router.replace("/(app)");
+          }
+        }
       }
     } catch (error) {
       console.error("Error starting checkout:", error);

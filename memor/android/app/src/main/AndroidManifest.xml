@@ -30,6 +30,13 @@
         <data android:scheme="memor"/>
         <data android:scheme="com.mymemor.memor"/>
       </intent-filter>
+      <intent-filter android:autoVerify="true" data-generated="true">
+        <action android:name="android.intent.action.VIEW"/>
+        <data android:scheme="https" android:host="memor.app" android:pathPrefix="/"/>
+        <data android:scheme="memor" android:host="*"/>
+        <category android:name="android.intent.category.BROWSABLE"/>
+        <category android:name="android.intent.category.DEFAULT"/>
+      </intent-filter>
     </activity>
   </application>
 </manifest>

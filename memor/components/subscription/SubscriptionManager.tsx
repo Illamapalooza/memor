@@ -158,11 +158,28 @@ export const SubscriptionManager = () => {
 
       {(isSubscribed || isTrialing) && !isCanceled && (
         <View style={styles.planDetails}>
-          <Text variant="titleMedium">Pro Features:</Text>
+          <Text variant="titleMedium" style={{ color: theme.colors.primary }}>
+            Pro Features:
+          </Text>
           <View style={styles.features}>
-            <Text variant="bodyMedium">• Unlimited note-taking</Text>
-            <Text variant="bodyMedium">• Unlimited AI queries</Text>
-            <Text variant="bodyMedium">• Advanced RAG features</Text>
+            <Text
+              variant="bodyMedium"
+              style={{ color: theme.colors.onSurface }}
+            >
+              • Up to 5 GB of storage
+            </Text>
+            <Text
+              variant="bodyMedium"
+              style={{ color: theme.colors.onSurface }}
+            >
+              • 24 queries per day (1 query per hour)
+            </Text>
+            <Text
+              variant="bodyMedium"
+              style={{ color: theme.colors.onSurface }}
+            >
+              • Advanced RAG features
+            </Text>
           </View>
           {isTrialing && (
             <PrimaryButton

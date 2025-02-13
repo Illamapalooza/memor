@@ -239,8 +239,19 @@ export class StripeService {
     trialPeriodDays?: number;
   }) {
     try {
-      // Verify customer exists
       const customer = await this.retrieveCustomer(customerId);
+
+      // Decode the URLs and ensure they're valid
+      const decodedSuccessUrl = decodeURIComponent(successUrl);
+      const decodedCancelUrl = decodeURIComponent(cancelUrl);
+
+      // Validate URLs
+      try {
+        new URL(decodedSuccessUrl);
+        new URL(decodedCancelUrl);
+      } catch (e) {
+        throw new Error("Invalid success or cancel URL");
+      }
 
       const session = await stripe.checkout.sessions.create({
         customer: customer.id,
@@ -258,12 +269,11 @@ export class StripeService {
                 trial_period_days: trialPeriodDays,
               }
             : undefined,
-        success_url: successUrl,
-        cancel_url: cancelUrl,
+        success_url: `${decodedSuccessUrl}?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: decodedCancelUrl,
         allow_promotion_codes: true,
       });
 
-      logger.info(`Created checkout session for customer ${customerId}`);
       return session;
     } catch (error) {
       logger.error("Error creating checkout session:", error);
