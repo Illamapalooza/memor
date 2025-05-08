@@ -8,6 +8,7 @@ export class NoteVectorizationService {
   private static instance: NoteVectorizationService;
   private pineconeService: PineconeService;
   private notesRef: CollectionReference;
+  private maxContentLength = 2000; // Maximum content length to vectorize
 
   private constructor() {
     this.pineconeService = PineconeService.getInstance();
@@ -48,6 +49,16 @@ export class NoteVectorizationService {
     });
   }
 
+  private truncateContent(content: string): string {
+    // If content is within limits, return as is
+    if (content.length <= this.maxContentLength) {
+      return content;
+    }
+
+    // Otherwise truncate with an indicator
+    return content.substring(0, this.maxContentLength) + "...";
+  }
+
   private async vectorizeNote(note: any) {
     try {
       if (!note.id || !note.title || !note.content) {
@@ -55,10 +66,15 @@ export class NoteVectorizationService {
         return;
       }
 
-      const content = `${note.title}\n\n${note.content}`;
+      // Extract and trim the most relevant content
+      const title = note.title.trim();
+      const trimmedContent = this.truncateContent(note.content.trim());
+
+      // Prioritize title and beginning of content for vectorization
+      const contentToVectorize = `${title}\n\n${trimmedContent}`;
 
       const document = new Document({
-        pageContent: content,
+        pageContent: contentToVectorize,
         metadata: {
           noteId: note.id,
           userId: note.userId,

@@ -58,12 +58,14 @@ export class TranscriptionService {
           messages: [
             {
               role: "system",
-              content: `Convert this transcribed audio into a clear, concise question for querying a note database.
+              content: `Convert this transcribed audio into a clear question while maintaining the original intent and words.
               Your task is to:
-              1. Remove filler words and speech artifacts
-              2. Make the question more formal and precise
-              3. Ensure the question is focused on retrieving relevant information
-              4. Maintain the core intent of the original query`,
+              1. Remove filler words and speech artifacts (oh's, umms, hmm, etc.)
+              2. Correct grammar WITHOUT changing the original words used in the query
+              3. Preserve the exact terminology, names, and specific references used by the speaker
+              4. Only if absolutely necessary to make sense, modify words, but ALWAYS prioritize maintaining the original intent and vocabulary
+              5. DO NOT make the question more formal if it changes the original wording
+              6. Ensure the question remains in the speaker's own voice and style`,
             },
             {
               role: "user",
@@ -87,12 +89,14 @@ export class TranscriptionService {
         messages: [
           {
             role: "system",
-            content: `You are a helpful assistant that organizes transcribed audio notes. 
+            content: `You are a helpful assistant that organizes transcribed audio notes while preserving the original content.
             Your task is to:
-            1. Clean up the transcription
-            2. Generate a concise title
+            1. Clean up the transcription by removing filler words (oh's, umms, hmm, etc.)
+            2. Generate a concise title based on the main topic
             3. Format the content with proper paragraphs and punctuation
-            4. Remove filler words and repetitions
+            4. Correct grammar errors WITHOUT changing the original words used
+            5. Preserve the exact terminology, names, and specific references 
+            6. Only if absolutely necessary to make sense, modify words, but ALWAYS prioritize maintaining the original intent and vocabulary
             Return the result in JSON format with 'title' and 'content' fields.`,
           },
           {

@@ -38,24 +38,65 @@ export class RAGController {
       // Initialize services
       const pineconeService = PineconeService.getInstance();
       const model = new ChatOpenAI({
-        modelName: "gpt-4-turbo-preview",
-        temperature: 0.7,
+        modelName: "gpt-3.5-turbo", // Use a smaller model to reduce token costs
+        temperature: 0.5, // Lower temperature for more concise responses
+        maxTokens: 500, // Limit the response length
       });
 
-      // Perform similarity search with metadata filter for user's notes
-      const relevantDocs = await pineconeService.similaritySearch(query, 4, {
+      // Retrieve only the most relevant documents
+      const k = 3; // Reduce from 4 to 3 documents
+      const relevantDocs = await pineconeService.similaritySearch(query, k, {
         userId: userId,
       });
 
-      // Construct prompt with context
-      const context = relevantDocs.map((doc) => doc.pageContent).join("\n\n");
+      // Check if we found any relevant documents
+      if (relevantDocs.length === 0) {
+        // No relevant documents found
+        return res.json({
+          answer: `I don't know anything about ${query}. There is no relevant information in your notes.`,
+          relevantNotes: [],
+        });
+      }
+
+      // Check if documents are actually relevant using similarity score
+      const hasRelevantInfo = await pineconeService.hasRelevantInformation(
+        query,
+        relevantDocs
+      );
+
+      if (!hasRelevantInfo) {
+        return res.json({
+          answer: `I don't know anything about ${query}. There is no relevant information in your notes.`,
+          relevantNotes: [],
+        });
+      }
+
+      // Truncate long documents to essential content
+      const truncatedDocs = relevantDocs.map((doc) => {
+        const content = doc.pageContent;
+        if (content.length > 500) {
+          return {
+            ...doc,
+            pageContent: content.substring(0, 500) + "...",
+          };
+        }
+        return doc;
+      });
+
+      // Construct a more concise prompt with strict instructions
+      const context = truncatedDocs.map((doc) => doc.pageContent).join("\n\n");
       const prompt = `
-        Context from your notes: ${context}
+Context from user's notes: ${context}
 
-        Question: ${query}
+Question: ${query}
 
-        Please provide a detailed answer based on the context from the notes. If the notes don't contain relevant information, please indicate that.
-      `;
+Instructions:
+1. Answer ONLY based on the information in the user's notes above.
+2. If the notes don't contain information directly relevant to the question, respond with "I don't know anything about [the topic]. There is no relevant information in your notes."
+3. DO NOT make up information or use general knowledge outside of what's in the notes.
+4. Keep your answer concise and focused on what's available in the notes.
+
+Answer:`;
 
       // Generate response
       const response = await model.invoke(prompt);
@@ -64,7 +105,7 @@ export class RAGController {
       if (!res.writableEnded) {
         res.json({
           answer: response.content,
-          relevantNotes: relevantDocs.map((doc) => ({
+          relevantNotes: truncatedDocs.map((doc) => ({
             content: doc.pageContent,
             metadata: doc.metadata,
           })),
