@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   StyleSheet,
@@ -9,7 +9,7 @@ import {
   Modal,
   Alert,
 } from "react-native";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useNotes } from "@/features/notes/hooks/useNotes";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { Text } from "@/components/ui/Text/Text";
@@ -25,14 +25,25 @@ import { useAuth } from "@/services/auth/AuthProvider";
 import { UsageService } from "@/services/usage/usage.service";
 
 export default function CreateScreen() {
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
+  const params = useLocalSearchParams();
+  const [title, setTitle] = useState((params.title as string) || "");
+  const [content, setContent] = useState((params.content as string) || "");
   const [isLoading, setIsLoading] = useState(false);
   const [showDiscardModal, setShowDiscardModal] = useState(false);
   const [titleHeight, setTitleHeight] = useState(40);
   const { createNote } = useNotes();
   const theme = useAppTheme();
   const { userProfile } = useAuth();
+
+  useEffect(() => {
+    // Handle route params change when navigated from another screen
+    if (params.title) {
+      setTitle(params.title as string);
+    }
+    if (params.content) {
+      setContent(params.content as string);
+    }
+  }, [params.title, params.content]);
 
   const hasUnsavedChanges = title.trim() !== "" || content.trim() !== "";
 
