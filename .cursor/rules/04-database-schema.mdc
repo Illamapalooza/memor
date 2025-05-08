@@ -1,0 +1,62 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Database Schema
+
+Memor uses Firebase Firestore for data storage with a Pinecone vector database for embedding storage.
+
+## Firestore Collections
+
+### users
+- id: string
+- email: string
+- displayName: string
+- photoURL: string
+- createdAt: timestamp
+- subscriptionTier: string ('free', 'pro', 'enterprise')
+- subscriptionEndDate: timestamp
+- aiQueriesUsedToday: number
+- aiQueriesLimit: number
+- settings: map
+
+### notes
+- id: string
+- userId: string
+- title: string
+- content: string
+- createdAt: timestamp
+- updatedAt: timestamp
+- tags: array
+- isArchived: boolean
+- isDeleted: boolean
+- syncStatus: string ('synced', 'pending', 'error')
+- vectorized: boolean
+
+### chunks
+- id: string
+- noteId: string
+- userId: string
+- content: string
+- embedding: map (stored in Pinecone, reference only)
+- createdAt: timestamp
+
+### subscriptions
+- id: string
+- userId: string
+- stripeCustomerId: string
+- stripePriceId: string
+- status: string
+- currentPeriodStart: timestamp
+- currentPeriodEnd: timestamp
+- cancelAtPeriodEnd: boolean
+
+### aiQueries
+- id: string
+- userId: string
+- query: string
+- response: string
+- tokens: number
+- createdAt: timestamp
+- noteContext: array (references to noteIds)

@@ -1,0 +1,37 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Subscription Model
+
+Memor uses a tiered subscription model to provide different levels of AI functionality.
+
+## Subscription Tiers
+
+1. **Free Tier**
+   - Basic note-taking functionality
+   - Limited AI queries per day
+   - Local storage with sync
+
+2. **Pro Tier**
+   - Increased AI query limits
+   - Advanced RAG features
+   - Priority processing
+
+3. **Enterprise Tier**
+   - Unlimited AI queries
+   - Custom AI model options
+   - Team collaboration features
+
+## Implementation
+
+- Subscription management in [memor-backend/src/services/subscriptionService.ts](mdc:memor-backend/src/services/subscriptionService.ts)
+- Stripe integration in [memor-backend/src/services/paymentService.ts](mdc:memor-backend/src/services/paymentService.ts)
+- Frontend subscription UI in [memor/features/subscription/SubscriptionScreen.tsx](mdc:memor/features/subscription/SubscriptionScreen.tsx)
+- Subscription hooks in [memor/hooks/useSubscription.ts](mdc:memor/hooks/useSubscription.ts)
+
+## Usage Tracking
+
+- AI query usage is tracked in [memor-backend/src/middleware/usageTrackingMiddleware.ts](mdc:memor-backend/src/middleware/usageTrackingMiddleware.ts)
+- Limits are enforced based on subscription tier

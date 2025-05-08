@@ -1,0 +1,38 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# RAG Pipeline
+
+Memor implements a Retrieval Augmented Generation (RAG) pipeline for AI-powered note queries.
+
+## Pipeline Components
+
+1. **Text Chunking**
+   - Notes are split into manageable chunks
+   - Processing happens in [memor-backend/src/services/chunkingService.ts](mdc:memor-backend/src/services/chunkingService.ts)
+
+2. **Embedding Generation**
+   - Text chunks are converted to vector embeddings using OpenAI
+   - Implementation in [memor-backend/src/services/embeddingService.ts](mdc:memor-backend/src/services/embeddingService.ts)
+
+3. **Vector Storage**
+   - Embeddings are stored in Pinecone vector database
+   - Managed by [memor-backend/src/services/vectorDbService.ts](mdc:memor-backend/src/services/vectorDbService.ts)
+
+4. **Retrieval**
+   - When a user query is received, relevant note chunks are retrieved from Pinecone
+   - Similarity search implementation in [memor-backend/src/services/retrievalService.ts](mdc:memor-backend/src/services/retrievalService.ts)
+
+5. **Generation**
+   - Retrieved contexts are used to generate AI responses with OpenAI
+   - Response generation in [memor-backend/src/services/generationService.ts](mdc:memor-backend/src/services/generationService.ts)
+
+6. **Query Processing**
+   - User queries are processed through the complete RAG pipeline
+   - Orchestrated in [memor-backend/src/controllers/aiQueryController.ts](mdc:memor-backend/src/controllers/aiQueryController.ts)
+
+## Frontend Integration
+- User queries are sent from [memor/features/ai/AiQueryScreen.tsx](mdc:memor/features/ai/AiQueryScreen.tsx)
+- API calls are handled by [memor/services/aiService.ts](mdc:memor/services/aiService.ts)

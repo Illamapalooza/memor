@@ -1,0 +1,25 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Project Overview
+
+Memor is an AI-powered note-taking application that combines traditional note management capabilities with advanced artificial intelligence features. Utilizing Retrieval Augmented Generation (RAG), Memor enables users to interact with their notes through natural language queries, receive contextually relevant responses, and manage information efficiently with a local-first architecture that maintains cloud synchronization.
+
+## Main Features
+- Local-first note-taking with cloud sync
+- AI-powered queries using RAG technology
+- Voice notes and transcription
+- Subscription-based model with tiered access
+- Cross-platform (Android/iOS) support
+
+## Key Entry Points
+- Mobile App: [memor/app/index.tsx](mdc:memor/app/index.tsx)
+- Backend: [memor-backend/src/index.ts](mdc:memor-backend/src/index.ts)
+
+## Project Structure
+- Frontend: React Native/Expo app in the [memor/](mdc:memor) directory
+- Backend: Express.js server in the [memor-backend/](mdc:memor-backend) directory
+- Technical Documentation: [memor-technical-documentation.md](mdc:memor-technical-documentation.md)
+- Requirements: [requirements.md](mdc:requirements.md)
