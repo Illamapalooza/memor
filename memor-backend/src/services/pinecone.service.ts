@@ -21,15 +21,20 @@ export class PineconeService {
   private embeddings: OpenAIEmbeddings;
   private vectorStore: PineconeStore | null = null;
   private readonly indexName = "megamind-index";
+  private readonly maxRetries = 3;
+  private readonly batchSize = 20; // Process documents in batches
+  private readonly relevanceThreshold = 0.75; // Threshold for determining relevance
 
   private constructor() {
     this.pinecone = new Pinecone({
       apiKey: process.env.PINECONE_API_KEY!,
     });
 
+    // Use text-embedding-3-small for better efficiency
     this.embeddings = new OpenAIEmbeddings({
       openAIApiKey: process.env.OPENAI_API_KEY,
       modelName: "text-embedding-3-small",
+      stripNewLines: true, // Remove unnecessary newlines to save tokens
     });
   }
 
@@ -53,35 +58,145 @@ export class PineconeService {
 
   async addDocuments(documents: Document[]) {
     const vectorStore = await this.initVectorStore();
-    await vectorStore.addDocuments(documents);
+
+    // Process in batches to optimize API calls
+    if (documents.length > this.batchSize) {
+      for (let i = 0; i < documents.length; i += this.batchSize) {
+        const batch = documents.slice(i, i + this.batchSize);
+        await vectorStore.addDocuments(batch);
+        logger.info(
+          `Added batch ${i / this.batchSize + 1} of documents to Pinecone`
+        );
+      }
+    } else {
+      await vectorStore.addDocuments(documents);
+    }
   }
 
   async similaritySearch(
     query: string,
     k: number = 4,
     filter?: Record<string, any>
-  ) {
-    const vectorStore = await this.initVectorStore();
-    return await vectorStore.similaritySearch(query, k, filter);
+  ): Promise<Document[]> {
+    try {
+      const vectorStore = await this.initVectorStore();
+      // Trim query to essential parts to save on embedding tokens
+      const trimmedQuery = query.trim().substring(0, 300);
+      return await vectorStore.similaritySearch(trimmedQuery, k, filter);
+    } catch (error) {
+      logger.error("Error in similarity search:", error);
+      // Retry with smaller k value on error
+      if (k > 1) {
+        logger.info(`Retrying similarity search with smaller k=${k - 1}`);
+        return this.similaritySearch(query, k - 1, filter);
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Checks if the documents are actually relevant to the query
+   * @param query The user's query
+   * @param docs The documents retrieved from the vector store
+   * @returns True if at least one document is determined to be relevant
+   */
+  async hasRelevantInformation(
+    query: string,
+    docs: Document[]
+  ): Promise<boolean> {
+    try {
+      if (docs.length === 0) {
+        return false;
+      }
+
+      // Get the embedding for the query
+      const queryEmbedding = await this.embeddings.embedQuery(query);
+
+      // Get embeddings for the documents
+      const docsContent = docs.map((doc) => doc.pageContent);
+      const docsEmbeddings = await this.embeddings.embedDocuments(docsContent);
+
+      // Calculate cosine similarity between query and each document
+      for (let i = 0; i < docsEmbeddings.length; i++) {
+        const similarity = this.calculateCosineSimilarity(
+          queryEmbedding,
+          docsEmbeddings[i]
+        );
+
+        // If any document exceeds the relevance threshold, consider it relevant
+        if (similarity >= this.relevanceThreshold) {
+          logger.info(
+            `Document ${i} is relevant with similarity score: ${similarity}`
+          );
+          return true;
+        }
+
+        logger.info(`Document ${i} similarity score: ${similarity}`);
+      }
+
+      // No documents met the relevance threshold
+      return false;
+    } catch (error) {
+      logger.error("Error in hasRelevantInformation:", error);
+      // Default to true in case of errors to avoid blocking valid queries
+      return true;
+    }
+  }
+
+  /**
+   * Calculates the cosine similarity between two vectors
+   * @param vecA First vector
+   * @param vecB Second vector
+   * @returns Cosine similarity score (0-1)
+   */
+  private calculateCosineSimilarity(vecA: number[], vecB: number[]): number {
+    // Calculate dot product
+    let dotProduct = 0;
+    for (let i = 0; i < vecA.length; i++) {
+      dotProduct += vecA[i] * vecB[i];
+    }
+
+    // Calculate magnitudes
+    let magA = 0;
+    let magB = 0;
+    for (let i = 0; i < vecA.length; i++) {
+      magA += vecA[i] * vecA[i];
+      magB += vecB[i] * vecB[i];
+    }
+
+    magA = Math.sqrt(magA);
+    magB = Math.sqrt(magB);
+
+    // Calculate cosine similarity
+    if (magA === 0 || magB === 0) {
+      return 0;
+    }
+
+    return dotProduct / (magA * magB);
   }
 
   async addOrUpdateDocument(document: Document) {
     const vectorStore = await this.initVectorStore();
 
-    // First try to find existing document by noteId
-    const existing = await vectorStore.similaritySearch("", 1, {
-      noteId: document.metadata.noteId,
-    });
-
-    if (existing.length > 0) {
-      // If exists, delete old vector before adding new one
-      await this.deleteDocumentsByMetadata({
+    try {
+      // First try to find existing document by noteId
+      const existing = await vectorStore.similaritySearch("", 1, {
         noteId: document.metadata.noteId,
       });
-    }
 
-    // Add new/updated vector
-    await vectorStore.addDocuments([document]);
+      if (existing.length > 0) {
+        // If exists, delete old vector before adding new one
+        await this.deleteDocumentsByMetadata({
+          noteId: document.metadata.noteId,
+        });
+      }
+
+      // Add new/updated vector
+      await vectorStore.addDocuments([document]);
+    } catch (error) {
+      logger.error("Error in addOrUpdateDocument:", error);
+      throw error;
+    }
   }
 
   async deleteDocumentsByMetadata(filter: Record<string, any>) {
@@ -90,9 +205,9 @@ export class PineconeService {
 
       // First, find vectors matching the filter
       const queryResponse = await index.query({
-        vector: new Array(1536).fill(0), // Dummy vector for metadata-only query
+        vector: new Array(512).fill(0), // Dummy vector for metadata-only query, reduced dimensions
         filter: filter,
-        topK: 100, // Adjust based on your needs
+        topK: 50, // Reduced from 100 to 50
         includeMetadata: true,
       });
 
