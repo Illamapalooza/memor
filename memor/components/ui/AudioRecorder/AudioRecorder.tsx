@@ -137,7 +137,17 @@ export function AudioRecorder({
         }
       );
 
-      const result = JSON.parse(response.body);
+      console.log("Transcription API response status:", response.status);
+
+      let result;
+      try {
+        result = JSON.parse(response.body);
+        console.log("Parsed transcription result:", result);
+      } catch (parseError) {
+        console.error("Error parsing response:", parseError);
+        console.log("Raw response body:", response.body);
+        throw new Error("Failed to parse transcription response");
+      }
 
       if (response.status !== 200) {
         throw new Error(result.message || "Failed to transcribe audio");
@@ -145,6 +155,7 @@ export function AudioRecorder({
 
       if (onTranscribed) {
         await onTranscribed(result);
+        onClose();
       } else {
         // Default note creation behavior
         UsageService.incrementUsage(
@@ -152,16 +163,26 @@ export function AudioRecorder({
           "audioRecordings",
           1
         );
-        router.push({
-          pathname: "/create",
-          params: {
-            title: result.title,
-            content: result.content,
-          },
-        });
-      }
 
-      onClose();
+        const title = result.title || "";
+        const content = result.content || "";
+
+        console.log("Navigating to create with params:", { title, content });
+
+        // First close the modal
+        onClose();
+
+        // Then navigate with a small delay
+        setTimeout(() => {
+          router.push({
+            pathname: "/create",
+            params: {
+              title,
+              content,
+            },
+          });
+        }, 300);
+      }
     } catch (error) {
       console.error("Failed to transcribe audio:", error);
       Alert.alert(
