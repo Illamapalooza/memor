@@ -12,76 +12,7 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
-    "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.mymemor.memor",
-      "infoPlist": {
-        "NSMicrophoneUsageDescription": "Allow Memor to access your microphone for audio recording",
-        "NSCameraUsageDescription": "Allow Memor to access your camera",
-        "NSPhotoLibraryUsageDescription": "Allow Memor to access your photos"
-      },
-      "googleServicesFile": "./GoogleService-Info.plist",
-      "associatedDomains": [
-        "applinks:memor.app"
-      ]
-    },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      },
-      "package": "com.mymemor.memor",
-      "permissions": [
-        "RECORD_AUDIO",
-        "CAMERA",
-        "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE",
-        "MODIFY_AUDIO_SETTINGS",
-        "android.permission.RECORD_AUDIO",
-        "android.permission.MODIFY_AUDIO_SETTINGS"
-      ],
-      "googleServicesFile": "./google-services.json",
-      "intentFilters": [
-        {
-          "action": "VIEW",
-          "autoVerify": true,
-          "data": [
-            {
-              "scheme": "https",
-              "host": "memor.app",
-              "pathPrefix": "/"
-            },
-            {
-              "scheme": "memor",
-              "host": "*"
-            }
-          ],
-          "category": [
-            "BROWSABLE",
-            "DEFAULT"
-          ]
-        }
-      ]
-    },
-    "plugins": [
-      "expo-router",
-      [
-        "expo-secure-store",
-        {
-          "faceIDPermission": "Allow Memor to access Face ID for secure storage"
-        }
-      ],
-      [
-        "expo-av",
-        {
-          "microphonePermission": "Allow Memor to access your microphone for audio recording"
-        }
-      ],
-      "@react-native-google-signin/google-signin"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "fonts": [
       {
         "asset": "./assets/fonts/Nunito-Regular.ttf",
@@ -115,6 +46,69 @@
         "asset": "./assets/fonts/Inter-Bold.otf",
         "family": "Inter-Bold"
       }
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.mymemor.memor",
+      "newArchEnabled": true,
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "Allow Memor to access your microphone for audio recording",
+        "NSCameraUsageDescription": "Allow Memor to access your camera",
+        "NSPhotoLibraryUsageDescription": "Allow Memor to access your photos"
+      },
+      "googleServicesFile": "./GoogleService-Info.plist",
+      "associatedDomains": ["applinks:memor.app"]
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.mymemor.memor",
+      "permissions": [
+        "RECORD_AUDIO",
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "MODIFY_AUDIO_SETTINGS",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
+      ],
+      "googleServicesFile": "./google-services.json",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "memor.app",
+              "pathPrefix": "/"
+            },
+            {
+              "scheme": "memor",
+              "host": "*"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-secure-store",
+        {
+          "faceIDPermission": "Allow Memor to access Face ID for secure storage"
+        }
+      ],
+      [
+        "expo-av",
+        {
+          "microphonePermission": "Allow Memor to access your microphone for audio recording"
+        }
+      ],
+      "@react-native-google-signin/google-signin"
     ],
     "extra": {
       "router": {
