@@ -1,5 +1,33 @@
 ---
-description:
-globs:
+description: 
+globs: 
 alwaysApply: false
 ---
+# Frontend Architecture
+
+The Memor frontend is built using React Native with Expo and uses a modular architecture.
+
+## Technology Stack
+- Framework: Expo SDK 52+
+- Language: TypeScript
+- UI Framework: React Native Paper
+- Navigation: Expo Router
+- State Management: React Context API, @tanstack/react-query
+- Data Storage: Firebase with local-first persistence
+
+## Directory Structure
+- [memor/app/](mdc:memor/app) - Expo Router pages and navigation
+- [memor/components/](mdc:memor/components) - Reusable UI components
+- [memor/features/](mdc:memor/features) - Feature-specific components and logic
+- [memor/contexts/](mdc:memor/contexts) - React Context providers
+- [memor/hooks/](mdc:memor/hooks) - Custom React hooks
+- [memor/services/](mdc:memor/services) - API and service integrations
+- [memor/utils/](mdc:memor/utils) - Utility functions
+- [memor/constants/](mdc:memor/constants) - Application constants
+- [memor/types/](mdc:memor/types) - TypeScript type definitions
+- [memor/assets/](mdc:memor/assets) - Static assets and resources
+
+## Key Files
+- [memor/package.json](mdc:memor/package.json) - Frontend dependencies
+- [memor/app.json](mdc:memor/app.json) - Expo configuration
+- [memor/tsconfig.json](mdc:memor/tsconfig.json) - TypeScript configuration

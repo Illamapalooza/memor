@@ -1,5 +1,36 @@
 ---
-description:
-globs:
+description: 
+globs: 
 alwaysApply: false
 ---
+# Development Workflow
+
+## Setup and Installation
+
+1. **Frontend Setup**
+   - Install dependencies with `npm install` in the [memor/](mdc:memor) directory
+   - Start development server with `npm run dev`
+   - Build for production with `npm run build`
+
+2. **Backend Setup**
+   - Install dependencies with `npm install` in the [memor-backend/](mdc:memor-backend) directory
+   - Start development server with `npm run dev`
+   - Build for production with `npm run build`
+
+## Environment Configuration
+
+- Frontend environment variables in [memor/app.json](mdc:memor/app.json)
+- Backend environment config in [memor-backend/src/config/environment.ts](mdc:memor-backend/src/config/environment.ts)
+
+## Testing
+
+- Unit tests with Jest
+- Frontend tests in [memor/__tests__/](mdc:memor/__tests__)
+- Backend tests in [memor-backend/src/__tests__/](mdc:memor-backend/src/__tests__)
+- Run tests with `npm test`
+
+## Deployment
+
+- Mobile app deployment with EAS Build
+- Backend deployment to cloud hosting
+- CI/CD configuration in GitHub Actions

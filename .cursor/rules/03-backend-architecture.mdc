@@ -1,5 +1,32 @@
 ---
-description:
-globs:
+description: 
+globs: 
 alwaysApply: false
 ---
+# Backend Architecture
+
+The Memor backend is built using Node.js and Express, implementing the RESTful API architecture for AI processing, subscription management, and vector database operations.
+
+## Technology Stack
+- Runtime: Node.js
+- Framework: Express.js with TypeScript
+- Database: Firebase Firestore
+- Authentication: Firebase Auth
+- Vector Database: Pinecone
+- AI/ML: OpenAI, LangChain
+- Security: Helmet, express-rate-limit, CORS
+
+## Directory Structure
+- [memor-backend/src/](mdc:memor-backend/src) - Source code
+- [memor-backend/src/controllers/](mdc:memor-backend/src/controllers) - Request handlers
+- [memor-backend/src/services/](mdc:memor-backend/src/services) - Business logic
+- [memor-backend/src/middleware/](mdc:memor-backend/src/middleware) - Express middleware
+- [memor-backend/src/routes/](mdc:memor-backend/src/routes) - API routes
+- [memor-backend/src/utils/](mdc:memor-backend/src/utils) - Utility functions
+- [memor-backend/src/models/](mdc:memor-backend/src/models) - Data models
+- [memor-backend/src/config/](mdc:memor-backend/src/config) - Configuration files
+
+## Key Files
+- [memor-backend/package.json](mdc:memor-backend/package.json) - Backend dependencies
+- [memor-backend/tsconfig.json](mdc:memor-backend/tsconfig.json) - TypeScript configuration
+- [memor-backend/src/index.ts](mdc:memor-backend/src/index.ts) - Server entry point
