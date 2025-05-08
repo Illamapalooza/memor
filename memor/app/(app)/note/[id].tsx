@@ -23,14 +23,12 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { colors } from "@/utils/theme";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { usePaywall } from "@/contexts/PaywallContext";
 
 export default function EditNoteScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { notes, updateNote } = useNotes();
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
-  const { checkFeatureAccess } = usePaywall();
 
   const note = notes.find((n) => n.id === id);
 
@@ -71,10 +69,6 @@ export default function EditNoteScreen() {
 
     try {
       // Check storage access before saving
-      const hasAccess = await checkFeatureAccess("storage");
-      if (!hasAccess) {
-        return; // Paywall will be shown by the PaywallGuard
-      }
 
       setIsLoading(true);
       await updateNote(id, title.trim(), content.trim());

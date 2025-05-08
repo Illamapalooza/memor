@@ -21,10 +21,8 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { colors } from "@/utils/theme";
-import { PaywallGuard } from "@/components/core/PaywallGuard";
 import { useAuth } from "@/services/auth/AuthProvider";
 import { UsageService } from "@/services/usage/usage.service";
-import { usePaywall } from "@/contexts/PaywallContext";
 
 export default function CreateScreen() {
   const [title, setTitle] = useState("");
@@ -35,7 +33,6 @@ export default function CreateScreen() {
   const { createNote } = useNotes();
   const theme = useAppTheme();
   const { userProfile } = useAuth();
-  const { checkFeatureAccess } = usePaywall();
 
   const hasUnsavedChanges = title.trim() !== "" || content.trim() !== "";
 
@@ -60,11 +57,6 @@ export default function CreateScreen() {
     }
 
     try {
-      const hasAccess = await checkFeatureAccess("storage");
-      if (!hasAccess) {
-        return;
-      }
-
       setIsLoading(true);
       await createNote(title.trim(), content.trim());
       router.back();
@@ -87,17 +79,15 @@ export default function CreateScreen() {
       style={[styles.container, { backgroundColor: theme.colors.background }]}
     >
       {shouldShowPaywall() ? (
-        <PaywallGuard feature="storage">
-          <CreateNoteContent
-            title={title}
-            content={content}
-            setTitle={setTitle}
-            setContent={setContent}
-            handleSave={handleSave}
-            handleBack={handleBack}
-            isLoading={isLoading}
-          />
-        </PaywallGuard>
+        <CreateNoteContent
+          title={title}
+          content={content}
+          setTitle={setTitle}
+          setContent={setContent}
+          handleSave={handleSave}
+          handleBack={handleBack}
+          isLoading={isLoading}
+        />
       ) : (
         <CreateNoteContent
           title={title}
@@ -168,11 +158,11 @@ function CreateNoteContent({
   isLoading: boolean;
 }) {
   const theme = useAppTheme();
-  const [titleHeight, setTitleHeight] = useState(40);
+  const [titleHeight, setTitleHeight] = useState(55);
 
   return (
     <>
-      <SafeAreaView style={{ flex: 1 }}>
+      <SafeAreaView style={{ flex: 1, paddingHorizontal: 0 }}>
         <View style={[styles.header]}>
           <Pressable onPress={handleBack} style={[styles.backButton]}>
             <Ionicons
@@ -213,7 +203,7 @@ function CreateNoteContent({
               styles.titleInput,
               {
                 color: theme.colors.onSurface,
-                height: Math.max(40, titleHeight),
+                height: Math.max(55, titleHeight),
               },
             ]}
             placeholderTextColor={colors.blackOlive[800]}
