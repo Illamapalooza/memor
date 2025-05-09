@@ -173,7 +173,7 @@ function CreateNoteContent({
 
   return (
     <>
-      <SafeAreaView style={{ flex: 1, paddingHorizontal: 0 }}>
+      <View style={{ flex: 1, paddingHorizontal: 0 }}>
         <View style={[styles.header]}>
           <Pressable onPress={handleBack} style={[styles.backButton]}>
             <Ionicons
@@ -232,7 +232,7 @@ function CreateNoteContent({
             placeholderTextColor={colors.blackOlive[600]}
           />
         </View>
-      </SafeAreaView>
+      </View>
     </>
   );
 }
