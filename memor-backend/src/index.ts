@@ -57,6 +57,10 @@ app.post(
 // Initialize note vectorization service
 NoteVectorizationService.getInstance();
 
+app.get("/api/test", (req, res) => {
+  res.json({ message: "Test route is working!" });
+});
+
 // Routes
 app.use("/api/customers", customerRoutes);
 app.use("/api/subscriptions", subscriptionRoutes);
