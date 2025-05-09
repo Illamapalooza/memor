@@ -1,16 +1,16 @@
 import React, { useState } from "react";
-import { StyleSheet, Pressable, Button, View } from "react-native";
+import {
+  StyleSheet,
+  Pressable,
+  View,
+  Modal,
+  TouchableOpacity,
+} from "react-native";
 import { Text } from "@/components/ui/Text/Text";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { router } from "expo-router";
 import type { Note } from "@/types/note";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { Menu } from "react-native-paper";
-import {
-  DropdownMenu,
-  MenuTrigger,
-  MenuOption,
-} from "../ui/DropDownMenu/DropdownMenu";
 
 type Props = {
   note: Note;
@@ -20,15 +20,15 @@ type Props = {
 export function NoteCard({ note, onDelete }: Props) {
   const theme = useAppTheme();
 
-  const [visible, setVisible] = useState(false);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
 
   const handleDelete = () => {
-    setVisible(false);
+    setDeleteModalVisible(false);
     onDelete(note.id);
   };
 
-  const openMenu = () => setVisible(true);
-  const closeMenu = () => setVisible(false);
+  const openDeleteModal = () => setDeleteModalVisible(true);
+  const closeDeleteModal = () => setDeleteModalVisible(false);
 
   return (
     <Pressable
@@ -53,64 +53,95 @@ export function NoteCard({ note, onDelete }: Props) {
       </Text>
 
       <View style={{ position: "absolute", bottom: 12, right: 12 }}>
-        <Menu
-          visible={visible}
-          onDismiss={closeMenu}
-          mode="elevated"
-          anchorPosition="bottom"
-          style={{
-            marginTop: 24,
-            marginRight: 12,
+        <Ionicons
+          name="trash-outline"
+          size={20}
+          color={theme.colors.primary}
+          style={{ marginTop: 24, alignSelf: "flex-end" }}
+          onPress={(e) => {
+            e.stopPropagation();
+            openDeleteModal();
           }}
-          theme={{
-            ...theme,
-            colors: {
-              ...theme.colors,
-            },
-          }}
-          contentStyle={[
-            styles.menu,
-            { backgroundColor: theme.colors.surface },
-          ]}
-          anchor={
-            <Ionicons
-              name="ellipsis-horizontal-circle"
-              size={24}
-              color={theme.colors.primary}
-              style={{ marginTop: 24, alignSelf: "flex-end" }}
-              onPress={(e) => {
-                e.stopPropagation();
-                openMenu();
-              }}
-            />
-          }
-        >
-          <Menu.Item
-            leadingIcon="delete-outline"
-            theme={{
-              ...theme,
-              colors: {
-                ...theme.colors,
-                onSurfaceVariant: theme.colors.error,
-              },
-            }}
-            style={{
-              paddingHorizontal: 4,
-              paddingVertical: 0,
-              width: "auto",
-              height: "auto",
-              backgroundColor: "transparent",
-            }}
-            onPress={handleDelete}
-            title="Delete"
-            titleStyle={{
-              color: theme.colors.error,
-              fontFamily: "Nunito-thin",
-            }}
-            contentStyle={[styles.menuItem, { backgroundColor: "transparent" }]}
-          />
-        </Menu>
+        />
       </View>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={deleteModalVisible}
+        onRequestClose={closeDeleteModal}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={closeDeleteModal}
+        >
+          <View
+            style={[
+              styles.modalContent,
+              { backgroundColor: theme.colors.surface },
+            ]}
+            onStartShouldSetResponder={() => true}
+            onTouchEnd={(e) => e.stopPropagation()}
+          >
+            <View style={styles.modalIcon}>
+              <Ionicons
+                name="trash-outline"
+                size={28}
+                color={theme.colors.error}
+              />
+            </View>
+            <Text
+              variant="subtitle1"
+              style={{
+                textAlign: "center",
+                marginBottom: 12,
+                color: theme.colors.onSurface,
+              }}
+            >
+              Delete Note
+            </Text>
+            <Text
+              variant="body"
+              style={{
+                textAlign: "center",
+                marginBottom: 24,
+                color: theme.colors.onSurfaceVariant,
+              }}
+            >
+              Are you sure you want to delete this note? This action cannot be
+              undone.
+            </Text>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity
+                style={[
+                  styles.button,
+                  styles.cancelButton,
+                  { borderColor: theme.colors.outline },
+                ]}
+                onPress={closeDeleteModal}
+              >
+                <Text variant="body" style={{ color: theme.colors.onSurface }}>
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.button,
+                  styles.deleteButton,
+                  { backgroundColor: theme.colors.error },
+                ]}
+                onPress={handleDelete}
+              >
+                <Text variant="body" style={{ color: theme.colors.onError }}>
+                  Delete
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </Pressable>
   );
 }
@@ -131,30 +162,53 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
-  menu: {
-    boxShadow: "none",
-    borderRadius: 12,
-    padding: 0,
-    width: "auto",
-    maxWidth: 220,
-    display: "flex",
-    flexDirection: "row",
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    padding: 20,
   },
-  menuOption: {
-    flexDirection: "row",
+  modalContent: {
+    width: "90%",
+    maxWidth: 300,
+    borderRadius: 16,
+    padding: 24,
     alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
   },
-  menuOptionText: {
-    fontSize: 14,
-    fontWeight: "bold",
-    textAlign: "left",
+  modalIcon: {
+    marginBottom: 16,
+    padding: 12,
+    borderRadius: 50,
+    backgroundColor: "rgba(255, 59, 48, 0.1)",
   },
-  menuItem: {
-    paddingHorizontal: 0,
-    paddingVertical: 0,
-    display: "flex",
+  buttonContainer: {
     flexDirection: "row",
-    justifyContent: "flex-start",
+    justifyContent: "space-between",
+    width: "100%",
+    gap: 12,
+  },
+  button: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  cancelButton: {
+    backgroundColor: "transparent",
+    borderWidth: 1,
+  },
+  deleteButton: {
+    backgroundColor: "#FF3B30",
   },
 });

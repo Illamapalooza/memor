@@ -125,7 +125,8 @@ export default function EditNoteScreen() {
             styles.titleInput,
             {
               color: theme.colors.onSurface,
-              height: Math.max(40, titleHeight),
+              minHeight: 40,
+              height: "auto",
             },
           ]}
           placeholder="Untitled"
@@ -136,9 +137,6 @@ export default function EditNoteScreen() {
           cursorColor={theme.colors.primary}
           selectionColor={theme.colors.primary}
           multiline={true}
-          onContentSizeChange={(event) =>
-            setTitleHeight(event.nativeEvent.contentSize.height)
-          }
         />
 
         <TextInput
