@@ -105,7 +105,7 @@ export function ImagePicker({ onImageUploaded, onError }: ImagePickerProps) {
               onPress={handleRetake}
               style={[styles.button, styles.retakeButton]}
             >
-              Rechoose
+              Re-select
             </OutlineButton>
             <PrimaryButton
               onPress={handleUpload}

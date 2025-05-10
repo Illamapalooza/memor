@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   View,
   StyleSheet,
@@ -8,6 +8,7 @@ import {
   ScrollView,
   Alert,
   Clipboard,
+  Easing,
 } from "react-native";
 import { TextInput, useTheme } from "react-native-paper";
 import { Text } from "../ui/Text/Text";
@@ -54,6 +55,14 @@ export const AskAIModal = ({ visible, onClose }: Props) => {
   const modalTranslateY = React.useRef(new Animated.Value(1000)).current;
   const overlayOpacity = React.useRef(new Animated.Value(0)).current;
 
+  // Add animation values for the loading indicator
+  const thinkingDotsAnim = useRef(new Animated.Value(0)).current;
+  const thinkingScale = useRef(new Animated.Value(0)).current;
+  const thinkingRotate = useRef(new Animated.Value(0)).current;
+  const thinkingBubble1 = useRef(new Animated.Value(0)).current;
+  const thinkingBubble2 = useRef(new Animated.Value(0)).current;
+  const thinkingBubble3 = useRef(new Animated.Value(0)).current;
+
   React.useEffect(() => {
     if (visible) {
       Animated.parallel([
@@ -84,6 +93,160 @@ export const AskAIModal = ({ visible, onClose }: Props) => {
       ]).start();
     }
   }, [visible]);
+
+  // Setup animations for the thinking indicators
+  useEffect(() => {
+    if (isLoading || isProcessingAudio) {
+      // Start scale animation
+      thinkingScale.setValue(0);
+      Animated.timing(thinkingScale, {
+        toValue: 1,
+        duration: 400,
+        easing: Easing.back(1.5),
+        useNativeDriver: true,
+      }).start();
+
+      // Start rotation animation
+      Animated.loop(
+        Animated.timing(thinkingRotate, {
+          toValue: 1,
+          duration: 2000,
+          easing: Easing.linear,
+          useNativeDriver: true,
+        })
+      ).start();
+
+      // Start dots animation
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(thinkingDotsAnim, {
+            toValue: 3,
+            duration: 1200,
+            easing: Easing.linear,
+            useNativeDriver: true,
+          }),
+          Animated.timing(thinkingDotsAnim, {
+            toValue: 0,
+            duration: 0,
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+
+      // Start floating animations for the bubbles
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(thinkingBubble1, {
+            toValue: 1,
+            duration: 1500,
+            easing: Easing.inOut(Easing.sin),
+            useNativeDriver: true,
+          }),
+          Animated.timing(thinkingBubble1, {
+            toValue: 0,
+            duration: 1500,
+            easing: Easing.inOut(Easing.sin),
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(thinkingBubble2, {
+            toValue: 1,
+            duration: 1700,
+            easing: Easing.inOut(Easing.sin),
+            useNativeDriver: true,
+          }),
+          Animated.timing(thinkingBubble2, {
+            toValue: 0,
+            duration: 1700,
+            easing: Easing.inOut(Easing.sin),
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(thinkingBubble3, {
+            toValue: 1,
+            duration: 1300,
+            easing: Easing.inOut(Easing.sin),
+            useNativeDriver: true,
+          }),
+          Animated.timing(thinkingBubble3, {
+            toValue: 0,
+            duration: 1300,
+            easing: Easing.inOut(Easing.sin),
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+    } else {
+      // Stop animations when not loading
+      thinkingDotsAnim.stopAnimation();
+      thinkingRotate.stopAnimation();
+      thinkingBubble1.stopAnimation();
+      thinkingBubble2.stopAnimation();
+      thinkingBubble3.stopAnimation();
+
+      // Fade out
+      Animated.timing(thinkingScale, {
+        toValue: 0,
+        duration: 300,
+        easing: Easing.ease,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [isLoading, isProcessingAudio]);
+
+  // Animation interpolations
+  const thinkingDotsOpacity1 = thinkingDotsAnim.interpolate({
+    inputRange: [0, 1, 2, 3],
+    outputRange: [0, 1, 1, 1],
+  });
+
+  const thinkingDotsOpacity2 = thinkingDotsAnim.interpolate({
+    inputRange: [0, 1, 2, 3],
+    outputRange: [0, 0, 1, 1],
+  });
+
+  const thinkingDotsOpacity3 = thinkingDotsAnim.interpolate({
+    inputRange: [0, 1, 2, 3],
+    outputRange: [0, 0, 0, 1],
+  });
+
+  const thinkingRotation = thinkingRotate.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["0deg", "360deg"],
+  });
+
+  const bubbleOneTransform = thinkingBubble1.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, -8],
+  });
+
+  const bubbleTwoTransform = thinkingBubble2.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, -10],
+  });
+
+  const bubbleThreeTransform = thinkingBubble3.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, -6],
+  });
+
+  const thinkingOpacity = thinkingScale.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 1],
+  });
+
+  const thinkingScaleTransform = thinkingScale.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.8, 1],
+  });
 
   const handleSubmit = async () => {
     if (!query.trim() || isLoading) return;
@@ -274,6 +437,131 @@ export const AskAIModal = ({ visible, onClose }: Props) => {
     </View>
   );
 
+  // Render thinking/loading indicator
+  const renderThinkingIndicator = () => {
+    if (!isLoading && !isProcessingAudio) return null;
+
+    return (
+      <Animated.View
+        style={[
+          styles.thinkingContainer,
+          {
+            opacity: thinkingOpacity,
+            transform: [{ scale: thinkingScaleTransform }],
+          },
+        ]}
+      >
+        <View style={styles.thinkingContent}>
+          <View style={styles.thinkingIconsRow}>
+            <Animated.View
+              style={[
+                styles.thinkingBubble,
+                {
+                  backgroundColor: `${theme.colors.primary}50`,
+                  width: 14,
+                  height: 14,
+                  transform: [{ translateY: bubbleOneTransform }],
+                },
+              ]}
+            />
+
+            <Animated.View
+              style={[
+                styles.thinkingBubble,
+                {
+                  backgroundColor: `${theme.colors.primary}70`,
+                  width: 18,
+                  height: 18,
+                  transform: [{ translateY: bubbleTwoTransform }],
+                },
+              ]}
+            />
+
+            <Animated.View
+              style={[
+                styles.thinkingMainBubble,
+                {
+                  backgroundColor: theme.colors.primary,
+                  transform: [{ rotate: thinkingRotation }],
+                },
+              ]}
+            >
+              <Ionicons name="sparkles" size={18} color="white" />
+            </Animated.View>
+
+            <Animated.View
+              style={[
+                styles.thinkingBubble,
+                {
+                  backgroundColor: `${theme.colors.primary}70`,
+                  width: 18,
+                  height: 18,
+                  transform: [{ translateY: bubbleTwoTransform }],
+                },
+              ]}
+            />
+
+            <Animated.View
+              style={[
+                styles.thinkingBubble,
+                {
+                  backgroundColor: `${theme.colors.primary}50`,
+                  width: 14,
+                  height: 14,
+                  transform: [{ translateY: bubbleThreeTransform }],
+                },
+              ]}
+            />
+          </View>
+
+          <View style={styles.thinkingTextContainer}>
+            <Text
+              variant="body"
+              style={[styles.thinkingText, { color: theme.colors.primary }]}
+            >
+              Thinking
+            </Text>
+            <View style={styles.dotsContainer}>
+              <Animated.Text
+                style={[
+                  styles.dot,
+                  {
+                    opacity: thinkingDotsOpacity1,
+                    color: theme.colors.primary,
+                  },
+                ]}
+              >
+                .
+              </Animated.Text>
+              <Animated.Text
+                style={[
+                  styles.dot,
+                  {
+                    opacity: thinkingDotsOpacity2,
+                    color: theme.colors.primary,
+                  },
+                ]}
+              >
+                .
+              </Animated.Text>
+              <Animated.Text
+                style={[
+                  styles.dot,
+                  {
+                    opacity: thinkingDotsOpacity3,
+                    color: theme.colors.primary,
+                  },
+                ]}
+              >
+                .
+              </Animated.Text>
+            </View>
+          </View>
+        </View>
+      </Animated.View>
+    );
+  };
+
   return (
     <PaywallGuard feature="aiQueries">
       <Modal
@@ -374,12 +662,13 @@ export const AskAIModal = ({ visible, onClose }: Props) => {
                 >
                   {renderResponseHeader()}
 
+                  {renderThinkingIndicator()}
+
                   <Text
                     variant="body"
                     style={{ color: theme.colors.onSurface }}
                   >
                     {streamedResponse}
-                    {isLoading && <Text style={{ opacity: 0.5 }}>|</Text>}
                   </Text>
 
                   {relevantNotes.length > 0 && streamedResponse && (
@@ -534,5 +823,55 @@ const styles = StyleSheet.create({
   },
   askButton: {
     width: "85%",
+  },
+  // Thinking animation styles
+  thinkingContainer: {
+    marginBottom: 16,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  thinkingContent: {
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 10,
+  },
+  thinkingIconsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    height: 60,
+    marginBottom: 10,
+  },
+  thinkingMainBubble: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
+    marginHorizontal: 8,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+  },
+  thinkingBubble: {
+    borderRadius: 12,
+    margin: 4,
+  },
+  thinkingText: {
+    fontWeight: "600",
+  },
+  thinkingTextContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  dotsContainer: {
+    flexDirection: "row",
+    marginLeft: 2,
+  },
+  dot: {
+    fontSize: 16,
+    fontWeight: "700",
   },
 });

@@ -107,7 +107,7 @@ export function NoteCard({ note, onDelete }: Props) {
               style={{
                 textAlign: "center",
                 marginBottom: 24,
-                color: theme.colors.onSurfaceVariant,
+                color: theme.colors.onSurface,
               }}
             >
               Are you sure you want to delete this note? This action cannot be

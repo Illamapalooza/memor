@@ -1,5 +1,12 @@
-import React, { useState } from "react";
-import { View, StyleSheet, Pressable, Alert } from "react-native";
+import React, { useState, useEffect, useRef } from "react";
+import {
+  View,
+  StyleSheet,
+  Pressable,
+  Alert,
+  Animated,
+  Easing,
+} from "react-native";
 import { useAppTheme } from "@/hooks/useAppTheme";
 import { Text } from "@/components/ui/Text/Text";
 import { IconSymbol } from "@/components/ui/IconSymbol";
@@ -18,6 +25,43 @@ export function Toolbar() {
   const theme = useAppTheme();
   const insets = useSafeAreaInsets();
   const { checkFeatureAccess, showPaywall } = usePaywall();
+
+  // Animation for floating effect
+  const floatAnim = useRef(new Animated.Value(0)).current;
+
+  // Set up floating animation
+  useEffect(() => {
+    const startAnimation = () => {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(floatAnim, {
+            toValue: 1,
+            duration: 1500,
+            easing: Easing.inOut(Easing.sin),
+            useNativeDriver: true,
+          }),
+          Animated.timing(floatAnim, {
+            toValue: 0,
+            duration: 1500,
+            easing: Easing.inOut(Easing.sin),
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+    };
+
+    startAnimation();
+
+    return () => {
+      floatAnim.stopAnimation();
+    };
+  }, []);
+
+  // Transform interpolation
+  const buttonFloatTransform = floatAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, -4], // Subtle movement (4 pixels)
+  });
 
   const handleAskAIPress = async () => {
     if (await checkFeatureAccess("aiQueries")) {
@@ -53,6 +97,36 @@ export function Toolbar() {
           },
         ]}
       >
+        <Animated.View
+          style={{ transform: [{ translateY: buttonFloatTransform }] }}
+        >
+          <Pressable
+            style={({ pressed }) => [
+              styles.aiButton,
+              {
+                backgroundColor: theme.colors.primary,
+                opacity: pressed ? 0.7 : 1,
+              },
+            ]}
+            onPress={handleAskAIPress}
+          >
+            <Ionicons
+              name="sparkles"
+              size={24}
+              color={theme.colors.onSurfaceVariant}
+            />
+            <Text
+              variant="bodySmall"
+              style={{
+                fontFamily: "Nunito-Bold",
+                color: theme.colors.onSurfaceVariant,
+              }}
+            >
+              Ask your mind
+            </Text>
+          </Pressable>
+        </Animated.View>
+
         <Pressable
           style={({ pressed }) => [
             styles.button,
@@ -82,32 +156,6 @@ export function Toolbar() {
             style={{ fontFamily: "Nunito-Bold", color: theme.colors.onSurface }}
           >
             Scan
-          </Text>
-        </Pressable>
-
-        <Pressable
-          style={({ pressed }) => [
-            styles.aiButton,
-            {
-              backgroundColor: theme.colors.primary,
-              opacity: pressed ? 0.7 : 1,
-            },
-          ]}
-          onPress={handleAskAIPress}
-        >
-          <Ionicons
-            name="sparkles"
-            size={24}
-            color={theme.colors.onSurfaceVariant}
-          />
-          <Text
-            variant="bodySmall"
-            style={{
-              fontFamily: "Nunito-Bold",
-              color: theme.colors.onSurfaceVariant,
-            }}
-          >
-            Ask your mind
           </Text>
         </Pressable>
 
