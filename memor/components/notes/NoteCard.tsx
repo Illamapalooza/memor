@@ -40,6 +40,7 @@ export function NoteCard({ note, onDelete }: Props) {
         },
       ]}
       onPress={() => router.push(`/note/${note.id}`)}
+      testID={`note-card-${note.id}`}
     >
       <Text variant="subtitle2" style={{ color: theme.colors.onSurface }}>
         {note.title}
@@ -62,6 +63,7 @@ export function NoteCard({ note, onDelete }: Props) {
             e.stopPropagation();
             openDeleteModal();
           }}
+          testID={`delete-note-button-${note.id}`}
         />
       </View>
 
@@ -84,6 +86,7 @@ export function NoteCard({ note, onDelete }: Props) {
             ]}
             onStartShouldSetResponder={() => true}
             onTouchEnd={(e) => e.stopPropagation()}
+            testID="delete-confirmation-modal"
           >
             <View style={styles.modalIcon}>
               <Ionicons
@@ -121,6 +124,7 @@ export function NoteCard({ note, onDelete }: Props) {
                   { borderColor: theme.colors.outline },
                 ]}
                 onPress={closeDeleteModal}
+                testID="cancel-delete-button"
               >
                 <Text variant="body" style={{ color: theme.colors.onSurface }}>
                   Cancel
@@ -133,6 +137,7 @@ export function NoteCard({ note, onDelete }: Props) {
                   { backgroundColor: theme.colors.error },
                 ]}
                 onPress={handleDelete}
+                testID="confirm-delete-button"
               >
                 <Text variant="body" style={{ color: theme.colors.onError }}>
                   Delete
