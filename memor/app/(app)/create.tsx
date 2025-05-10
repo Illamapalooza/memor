@@ -182,10 +182,16 @@ export default function CreateScreen() {
               { backgroundColor: theme.colors.surface },
             ]}
           >
-            <Text variant="h3" style={styles.modalTitle}>
+            <Text
+              variant="h3"
+              style={[styles.modalTitle, { color: theme.colors.primary }]}
+            >
               Discard Changes?
             </Text>
-            <Text variant="body" style={styles.modalText}>
+            <Text
+              variant="body"
+              style={[styles.modalText, { color: theme.colors.onSurface }]}
+            >
               You have unsaved changes. Are you sure you want to discard them?
             </Text>
             <View style={styles.modalButtons}>

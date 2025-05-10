@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   StyleSheet,
@@ -7,6 +7,7 @@ import {
   Animated,
   Alert,
   Platform,
+  Easing,
 } from "react-native";
 import { Audio } from "expo-av";
 import { Text } from "@/components/ui/Text/Text";
@@ -52,6 +53,12 @@ export function AudioRecorder({
   const overlayOpacity = React.useRef(new Animated.Value(0)).current;
   const modalTranslateY = React.useRef(new Animated.Value(300)).current;
 
+  // Add animation values for the transcription loading indicator
+  const transcribeScale = useRef(new Animated.Value(0)).current;
+  const transcribeRotate = useRef(new Animated.Value(0)).current;
+  const transcribeBubble1 = useRef(new Animated.Value(0)).current;
+  const transcribeBubble2 = useRef(new Animated.Value(0)).current;
+
   useEffect(() => {
     if (visible) {
       Animated.parallel([
@@ -94,6 +101,103 @@ export function AudioRecorder({
       if (interval) clearInterval(interval);
     };
   }, [isRecording, isPaused]);
+
+  // Setup animations for the transcription loading indicator
+  useEffect(() => {
+    if (isTranscribing) {
+      // Start scale animation
+      transcribeScale.setValue(0);
+      Animated.timing(transcribeScale, {
+        toValue: 1,
+        duration: 400,
+        easing: Easing.back(1.5),
+        useNativeDriver: true,
+      }).start();
+
+      // Start rotation animation for the main icon
+      Animated.loop(
+        Animated.timing(transcribeRotate, {
+          toValue: 1,
+          duration: 2000,
+          easing: Easing.linear,
+          useNativeDriver: true,
+        })
+      ).start();
+
+      // Start floating animations for the bubbles
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(transcribeBubble1, {
+            toValue: 1,
+            duration: 1500,
+            easing: Easing.inOut(Easing.sin),
+            useNativeDriver: true,
+          }),
+          Animated.timing(transcribeBubble1, {
+            toValue: 0,
+            duration: 1500,
+            easing: Easing.inOut(Easing.sin),
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(transcribeBubble2, {
+            toValue: 1,
+            duration: 1700,
+            easing: Easing.inOut(Easing.sin),
+            useNativeDriver: true,
+          }),
+          Animated.timing(transcribeBubble2, {
+            toValue: 0,
+            duration: 1700,
+            easing: Easing.inOut(Easing.sin),
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+    } else {
+      // Stop and reset animations when not transcribing
+      transcribeRotate.stopAnimation();
+      transcribeBubble1.stopAnimation();
+      transcribeBubble2.stopAnimation();
+
+      Animated.timing(transcribeScale, {
+        toValue: 0,
+        duration: 300,
+        easing: Easing.ease,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [isTranscribing]);
+
+  // Animation interpolations
+  const transcribeRotation = transcribeRotate.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["0deg", "360deg"],
+  });
+
+  const bubbleOneTransform = transcribeBubble1.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, -10],
+  });
+
+  const bubbleTwoTransform = transcribeBubble2.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, -15],
+  });
+
+  const transcribeOpacity = transcribeScale.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 1],
+  });
+
+  const transcribeScaleTransform = transcribeScale.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.8, 1],
+  });
 
   const handleClose = () => {
     if (recordingUri) {
@@ -347,6 +451,102 @@ export function AudioRecorder({
     </View>
   );
 
+  // Render transcription loading indicator
+  const renderTranscribingIndicator = () => {
+    if (!isTranscribing) return null;
+
+    return (
+      <Animated.View
+        style={[
+          styles.transcribingOverlay,
+          {
+            opacity: transcribeOpacity,
+            backgroundColor: `${theme.colors.surface}F5`,
+          },
+        ]}
+      >
+        <Animated.View
+          style={[
+            styles.transcribingContainer,
+            {
+              transform: [{ scale: transcribeScaleTransform }],
+            },
+          ]}
+        >
+          <View style={styles.transcribingContent}>
+            <View style={styles.transcribingIconsRow}>
+              <Animated.View
+                style={[
+                  styles.transcribingBubble,
+                  {
+                    backgroundColor: `${theme.colors.primary}80`,
+                    transform: [{ translateY: bubbleOneTransform }],
+                  },
+                ]}
+              >
+                <Ionicons
+                  name="mic-outline"
+                  size={20}
+                  color={theme.colors.primary}
+                />
+              </Animated.View>
+
+              <Animated.View
+                style={[
+                  styles.transcribingMainBubble,
+                  {
+                    backgroundColor: theme.colors.primary,
+                    transform: [{ rotate: transcribeRotation }],
+                  },
+                ]}
+              >
+                <Ionicons name="sync" size={28} color="white" />
+              </Animated.View>
+
+              <Animated.View
+                style={[
+                  styles.transcribingBubble,
+                  {
+                    backgroundColor: `${theme.colors.primary}80`,
+                    transform: [{ translateY: bubbleTwoTransform }],
+                  },
+                ]}
+              >
+                <Ionicons
+                  name="document-text-outline"
+                  size={20}
+                  color={theme.colors.primary}
+                />
+              </Animated.View>
+            </View>
+
+            <Text
+              variant="h3"
+              style={[
+                styles.transcribingTitle,
+                { color: theme.colors.primary },
+              ]}
+            >
+              Transcribing Audio
+            </Text>
+
+            <Text
+              variant="body"
+              style={[
+                styles.transcribingSubtitle,
+                { color: theme.colors.onSurface },
+              ]}
+            >
+              {mode === "query"
+                ? "Converting your question to text..."
+                : "Creating your note from audio..."}
+            </Text>
+          </View>
+        </Animated.View>
+      </Animated.View>
+    );
+  };
+
   return (
     <PaywallGuard feature="audioRecordings">
       <Modal
@@ -412,6 +612,9 @@ export function AudioRecorder({
                 </>
               )}
             </View>
+
+            {/* Transcription Loading Overlay */}
+            {renderTranscribingIndicator()}
           </Animated.View>
 
           <Modal visible={showConfirmation} transparent animationType="fade">
@@ -531,5 +734,69 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     justifyContent: "center",
     alignItems: "center",
+  },
+  // Transcribing animation styles
+  transcribingOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    zIndex: 10,
+  },
+  transcribingContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 24,
+    maxWidth: "90%",
+  },
+  transcribingContent: {
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 16,
+  },
+  transcribingIconsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    height: 80,
+    marginBottom: 16,
+  },
+  transcribingMainBubble: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    alignItems: "center",
+    justifyContent: "center",
+    marginHorizontal: 16,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+  },
+  transcribingBubble: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  transcribingTitle: {
+    fontWeight: "700",
+    textAlign: "center",
+  },
+  transcribingSubtitle: {
+    textAlign: "center",
+    opacity: 0.7,
   },
 });
