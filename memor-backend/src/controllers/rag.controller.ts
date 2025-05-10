@@ -39,21 +39,21 @@ export class RAGController {
       const pineconeService = PineconeService.getInstance();
       const model = new ChatOpenAI({
         modelName: "gpt-3.5-turbo", // Use a smaller model to reduce token costs
-        temperature: 0.5, // Lower temperature for more concise responses
+        temperature: 0.7, // Increased temperature for more conversational responses
         maxTokens: 500, // Limit the response length
       });
 
       // Retrieve only the most relevant documents
-      const k = 3; // Reduce from 4 to 3 documents
+      const k = 5; // Increased from 3 to 5 documents to get more context
       const relevantDocs = await pineconeService.similaritySearch(query, k, {
         userId: userId,
       });
 
       // Check if we found any relevant documents
       if (relevantDocs.length === 0) {
-        // No relevant documents found
+        // No relevant documents found - respond in a casual, friendly way
         return res.json({
-          answer: `I don't know anything about ${query}. There is no relevant information in your notes.`,
+          answer: `Hey, I looked through your notes but couldn't find anything about "${query}". Maybe add some notes on this topic when you get a chance? I'd be happy to help once you do!`,
           relevantNotes: [],
         });
       }
@@ -65,75 +65,63 @@ export class RAGController {
       );
 
       if (!hasRelevantInfo) {
+        // Found documents but they're not relevant - respond in a conversational way
         return res.json({
-          answer: `I don't know anything about ${query}. There is no relevant information in your notes.`,
-          relevantNotes: [],
-        });
-      }
-
-      // Truncate long documents to essential content
-      const truncatedDocs = relevantDocs.map((doc) => {
-        const content = doc.pageContent;
-        if (content.length > 500) {
-          return {
-            ...doc,
-            pageContent: content.substring(0, 500) + "...",
-          };
-        }
-        return doc;
-      });
-
-      // Construct a more concise prompt with strict instructions
-      const context = truncatedDocs.map((doc) => doc.pageContent).join("\n\n");
-      const prompt = `
-Context from user's notes: ${context}
-
-Question: ${query}
-
-Instructions:
-1. Answer ONLY based on the information in the user's notes above.
-2. If the notes don't contain information directly relevant to the question, respond with "I don't know anything about [the topic]. There is no relevant information in your notes."
-3. DO NOT make up information or use general knowledge outside of what's in the notes.
-4. Keep your answer concise and focused on what's available in the notes.
-
-Answer:`;
-
-      // Generate response
-      const response = await model.invoke(prompt);
-
-      // Check if client is still connected before sending response
-      if (!res.writableEnded) {
-        res.json({
-          answer: response.content,
-          relevantNotes: truncatedDocs.map((doc) => ({
+          answer: `So I found some of your notes, but honestly, they don't seem to mention much about "${query}". I wonder if you've written about this somewhere else? Or maybe try asking in a different way and I'll see what I can find!`,
+          relevantNotes: relevantDocs.map((doc) => ({
             content: doc.pageContent,
             metadata: doc.metadata,
           })),
         });
       }
 
-      //   if (!res.writableEnded) {
-      //     res.json({
-      //       answer: `  "1. **Progress Update on Memory Project**: You've mentioned that the Memory project is nearing completion, with the only remaining task being the integration of Firebase storage for cloud storage capabilities. This suggests that the project is in its final stages, and you're focusing on implementing a solution for storing data online.\n" +
-      // '\n' +
-      // "2. **Lowkey Lyrics**: You've included the lyrics to a song that discuss themes of secret romance and discretion. The lyrics narrate a scenario where the speaker and the listener share intimate moments quietly, away from the public eye, emphasizing the desire to keep their relationship private and lowkey. The song seems to explore feelings of attraction and the thrill of a covert connection, with repeated mentions of avoiding attention and staying discreet.\n" +
-      // '\n' +
-      // "3. **Expo React Deployment on the EAS**: You've noted that the Memoir application should operate smoothly when deployed on the Expo Application Services (EAS) using Expo React, addressing Nathan specifically. This suggests that there's a plan or recommendation for deploying an application using specific technology (Expo React) and platform (EAS), indicating a technical aspect of a project that likely involves app development or deployment considerations.\n" +
-      // '\n' +
-      // 'Overall, your notes span technical project updates, creative content in the form of song lyrics, and specific technical advice or instructions regarding app deployment. Each entry serves a distinct purpose, from project management and artistic expression to technical guidance.`,
-      //       relevantNotes: [
-      //         {
-      //           content:
-      //             "1. **Progress Update on Memory Project**: You've mentioned that the Memory project is nearing completion, with the only remaining task being the integration of Firebase storage for cloud storage capabilities. This suggests that the project is in its final stages, and you're focusing on implementing a solution for storing data online.\n",
-      //           metadata: {
-      //             noteId: "1",
-      //             title: "Progress Update on Memory Project",
-      //             userId: "1",
-      //           },
-      //         },
-      //       ],
-      //     });
-      //   }
+      // Truncate long documents to essential content
+      const truncatedDocs = relevantDocs.map((doc) => {
+        const content = doc.pageContent;
+        if (content.length > 800) {
+          // Increased from 500 to 800 to include more context
+          return {
+            ...doc,
+            pageContent: content.substring(0, 800) + "...",
+          };
+        }
+        return doc;
+      });
+
+      // Construct a prompt with a conversational, friendly tone
+      const context = truncatedDocs.map((doc) => doc.pageContent).join("\n\n");
+
+      // Generate response using messages with tuples format (role, content)
+      const response = await model.invoke([
+        [
+          "system",
+          "You are Memor, a friendly and helpful AI assistant who speaks in a warm, casual tone. You sound like a close friend chatting over coffee. You're enthusiastic about helping users with their notes, and you make conversation feel natural and engaging. Avoid formal language or academic phrasing. If you don't have enough information in the notes to answer well, be honest and say so in a friendly way.",
+        ],
+        [
+          "user",
+          `I found these notes that might help answer your question:
+
+${context}
+
+Your question was: "${query}"
+
+Could you help me understand what these notes tell me about this? If the notes don't really answer the question, just be honest and tell me you don't have enough info in a friendly way.`,
+        ],
+      ]);
+
+      // Return the raw response without any cleaning or formatting
+      const processedResponse = response.content.toString();
+
+      // Check if client is still connected before sending response
+      if (!res.writableEnded) {
+        res.json({
+          answer: processedResponse,
+          relevantNotes: truncatedDocs.map((doc) => ({
+            content: doc.pageContent,
+            metadata: doc.metadata,
+          })),
+        });
+      }
     } catch (error) {
       logger.error("Error in RAG query:", error);
       throw new AppError(500, "Error processing RAG query");

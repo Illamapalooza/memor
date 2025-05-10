@@ -6,6 +6,7 @@ import { PrimaryButton, OutlineButton } from "@/components/ui/Button";
 import { subscriptionLimits } from "@/utils/subscription-limits";
 import { SubscriptionModal } from "@/components/subscription/SubscriptionModal";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { FeatureFlags } from "@/utils/featureFlags";
 
 type PaywallModalProps = {
   visible: boolean;
@@ -23,6 +24,11 @@ export const PaywallModal = ({
   const theme = useAppTheme();
   const [showSubscriptionModal, setShowSubscriptionModal] =
     React.useState(false);
+
+  // Don't show modal if paywalls are disabled
+  if (!FeatureFlags.SHOW_PAYWALLS) {
+    return null;
+  }
 
   const getFeatureLimit = () => {
     if (!feature) return "";

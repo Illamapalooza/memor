@@ -51,6 +51,7 @@ export const AskAIModal = ({ visible, onClose }: Props) => {
     useState<AbortController | null>(null);
   const [isProcessingAudio, setIsProcessingAudio] = useState(false);
   const { speak, stop, isPlaying, isTTSEnabled, toggleTTS } = useTTS();
+  const [scrollViewRef, setScrollViewRef] = useState<ScrollView | null>(null);
 
   const modalTranslateY = React.useRef(new Animated.Value(1000)).current;
   const overlayOpacity = React.useRef(new Animated.Value(0)).current;
@@ -256,6 +257,7 @@ export const AskAIModal = ({ visible, onClose }: Props) => {
       const result = await queryAI(query);
 
       if (result) {
+        // Use the raw response directly
         setResponse(result.answer);
         setRelevantNotes(result.relevantNotes);
         simulateStreamingResponse(result.answer);
@@ -299,8 +301,14 @@ export const AskAIModal = ({ visible, onClose }: Props) => {
   const simulateStreamingResponse = (fullResponse: string) => {
     const controller = new AbortController();
     setStreamController(controller);
-    let index = 0;
     setStreamedResponse("");
+
+    // Improve word splitting to preserve punctuation with words
+    const words = fullResponse.split(/(\s+|\b(?=[.,;!?]))/);
+    let wordIndex = 0;
+
+    // For longer responses, group words for smoother streaming
+    const streamChunkSize = fullResponse.length > 500 ? 3 : 1; // Use chunks of 3 words for long responses
 
     const interval = setInterval(() => {
       if (controller.signal.aborted) {
@@ -308,14 +316,20 @@ export const AskAIModal = ({ visible, onClose }: Props) => {
         return;
       }
 
-      if (index < fullResponse.length) {
-        setStreamedResponse((prev) => prev + fullResponse[index]);
-        index++;
+      if (wordIndex < words.length) {
+        // Stream by chunks for smoother flow
+        const chunk = words
+          .slice(wordIndex, wordIndex + streamChunkSize)
+          .join("");
+        setStreamedResponse((prev) => prev + chunk);
+        wordIndex += streamChunkSize;
       } else {
+        // Streaming complete - ensure the full response is set
+        setStreamedResponse(fullResponse);
         clearInterval(interval);
         setStreamController(null);
       }
-    }, 30);
+    }, 40); // Balanced speed for readability
 
     return () => {
       controller.abort();
@@ -339,6 +353,7 @@ export const AskAIModal = ({ visible, onClose }: Props) => {
       const result = await queryAI(transcription.content);
 
       if (result) {
+        // Use the raw response directly
         setResponse(result.answer);
         setRelevantNotes(result.relevantNotes);
         simulateStreamingResponse(result.answer);
@@ -369,6 +384,16 @@ export const AskAIModal = ({ visible, onClose }: Props) => {
       stop();
     }
   }, [visible, stop]);
+
+  // Scroll to bottom when new content is streamed
+  useEffect(() => {
+    if (streamedResponse && scrollViewRef) {
+      // Small delay to ensure content is rendered before scrolling
+      setTimeout(() => {
+        scrollViewRef.scrollToEnd({ animated: true });
+      }, 100);
+    }
+  }, [streamedResponse]);
 
   const renderInputSection = () => (
     <View style={styles.inputContainer}>
@@ -653,12 +678,16 @@ export const AskAIModal = ({ visible, onClose }: Props) => {
 
               {(streamedResponse || isLoading) && (
                 <ScrollView
+                  ref={(ref) => setScrollViewRef(ref)}
                   style={[
                     styles.responseContainer,
                     { backgroundColor: theme.colors.background },
                   ]}
                   contentContainerStyle={styles.responseContent}
                   indicatorStyle={dark ? "black" : "white"}
+                  showsVerticalScrollIndicator={true}
+                  nestedScrollEnabled={true}
+                  overScrollMode="never"
                 >
                   {renderResponseHeader()}
 
@@ -666,7 +695,12 @@ export const AskAIModal = ({ visible, onClose }: Props) => {
 
                   <Text
                     variant="body"
-                    style={{ color: theme.colors.onSurface }}
+                    style={{
+                      color: theme.colors.onSurface,
+                      lineHeight: 22, // Improve line height for better readability
+                      letterSpacing: 0.2, // Slight letter spacing for clarity
+                    }}
+                    allowFontScaling={false} // Prevent font scaling from breaking words
                   >
                     {streamedResponse}
                   </Text>

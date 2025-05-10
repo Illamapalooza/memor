@@ -4,6 +4,7 @@ import { useAuth } from "@/services/auth/AuthProvider";
 import { UsageService } from "@/services/usage/usage.service";
 import { SubscriptionService } from "@/services/subscription/subscription.service";
 import { DEFAULT_SUBSCRIPTION } from "@/utils/defaults";
+import { FeatureFlags } from "@/utils/featureFlags";
 
 type PaywallContextType = {
   showPaywall: (feature?: "aiQueries" | "audioRecordings" | "storage") => void;
@@ -24,6 +25,9 @@ export function PaywallProvider({ children }: { children: React.ReactNode }) {
 
   const showPaywall = useCallback(
     async (feature?: "aiQueries" | "audioRecordings" | "storage") => {
+      // Skip showing paywalls if feature flag is disabled
+      if (!FeatureFlags.SHOW_PAYWALLS) return;
+
       if (!userProfile) return;
 
       const subscription = await SubscriptionService.getCurrentSubscription();
@@ -48,6 +52,9 @@ export function PaywallProvider({ children }: { children: React.ReactNode }) {
     async (
       feature: "aiQueries" | "audioRecordings" | "storage"
     ): Promise<boolean> => {
+      // Always allow access if paywalls are disabled
+      if (!FeatureFlags.SHOW_PAYWALLS) return true;
+
       if (!userProfile) return false;
 
       const subscription = await SubscriptionService.getCurrentSubscription();

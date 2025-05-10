@@ -23,7 +23,7 @@ export class PineconeService {
   private readonly indexName = "megamind-index";
   private readonly maxRetries = 3;
   private readonly batchSize = 20; // Process documents in batches
-  private readonly relevanceThreshold = 0.75; // Threshold for determining relevance
+  private readonly relevanceThreshold = 0.5; // Lowered from 0.65 for even more lenient matching
 
   private constructor() {
     this.pinecone = new Pinecone({
@@ -109,6 +109,11 @@ export class PineconeService {
         return false;
       }
 
+      // With 5 or more documents, assume at least one is relevant
+      if (docs.length >= 5) {
+        return true;
+      }
+
       // Get the embedding for the query
       const queryEmbedding = await this.embeddings.embedQuery(query);
 
@@ -117,11 +122,14 @@ export class PineconeService {
       const docsEmbeddings = await this.embeddings.embedDocuments(docsContent);
 
       // Calculate cosine similarity between query and each document
+      let highestSimilarity = 0;
       for (let i = 0; i < docsEmbeddings.length; i++) {
         const similarity = this.calculateCosineSimilarity(
           queryEmbedding,
           docsEmbeddings[i]
         );
+
+        highestSimilarity = Math.max(highestSimilarity, similarity);
 
         // If any document exceeds the relevance threshold, consider it relevant
         if (similarity >= this.relevanceThreshold) {
@@ -132,6 +140,14 @@ export class PineconeService {
         }
 
         logger.info(`Document ${i} similarity score: ${similarity}`);
+      }
+
+      // If highest similarity is at least 0.4, consider it somewhat relevant
+      if (highestSimilarity >= 0.4) {
+        logger.info(
+          `Found somewhat relevant document with similarity: ${highestSimilarity}`
+        );
+        return true;
       }
 
       // No documents met the relevance threshold
