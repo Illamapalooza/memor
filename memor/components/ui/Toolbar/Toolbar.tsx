@@ -35,6 +35,14 @@ export function Toolbar() {
     }
   };
 
+  const handleImageToNotesPress = async () => {
+    if (await checkFeatureAccess("aiQueries")) {
+      router.push("/upload-image");
+    } else {
+      showPaywall("aiQueries");
+    }
+  };
+
   return (
     <>
       <View
@@ -58,6 +66,22 @@ export function Toolbar() {
             style={{ fontFamily: "Nunito-Bold", color: theme.colors.onSurface }}
           >
             Record
+          </Text>
+        </Pressable>
+
+        <Pressable
+          style={({ pressed }) => [
+            styles.button,
+            { opacity: pressed ? 0.7 : 1 },
+          ]}
+          onPress={handleImageToNotesPress}
+        >
+          <Ionicons name="camera" size={24} color={theme.colors.onSurface} />
+          <Text
+            variant="bodySmall"
+            style={{ fontFamily: "Nunito-Bold", color: theme.colors.onSurface }}
+          >
+            Scan
           </Text>
         </Pressable>
 

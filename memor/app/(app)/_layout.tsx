@@ -32,6 +32,10 @@ export default function AppLayout() {
           options={{ presentation: "modal", headerShown: false }}
         />
         <Stack.Screen
+          name="upload-image"
+          options={{ presentation: "modal", headerShown: false }}
+        />
+        <Stack.Screen
           name="note/[id]"
           options={{
             headerShown: false,

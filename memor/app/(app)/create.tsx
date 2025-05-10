@@ -8,7 +8,10 @@ import {
   Pressable,
   Modal,
   Alert,
+  ScrollView,
+  Text as RNText,
 } from "react-native";
+import { Image } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
 import { useNotes } from "@/features/notes/hooks/useNotes";
 import { useAppTheme } from "@/hooks/useAppTheme";
@@ -28,12 +31,37 @@ export default function CreateScreen() {
   const params = useLocalSearchParams();
   const [title, setTitle] = useState((params.title as string) || "");
   const [content, setContent] = useState((params.content as string) || "");
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showDiscardModal, setShowDiscardModal] = useState(false);
   const [titleHeight, setTitleHeight] = useState(40);
   const { createNote } = useNotes();
   const theme = useAppTheme();
   const { userProfile } = useAuth();
+
+  // Helper function to validate and fix image URLs if needed
+  const validateImageUrl = (url: string): string => {
+    if (!url) return url;
+
+    // Make sure Firebase Storage URLs have properly encoded path segments
+    if (url.includes("/o/users/")) {
+      const regex = /\/o\/users\/([^\/]+)\/images\/([^?]+)/;
+      const match = url.match(regex);
+
+      if (match) {
+        const userId = match[1];
+        const fileName = match[2];
+
+        // Rebuild the URL with proper URL encoding
+        const baseUrl = url.split("/o/")[0];
+        const queryParams = url.split("?")[1];
+
+        return `${baseUrl}/o/users%2F${userId}%2Fimages%2F${fileName}?${queryParams}`;
+      }
+    }
+
+    return url;
+  };
 
   useEffect(() => {
     // Handle route params change when navigated from another screen
@@ -43,9 +71,26 @@ export default function CreateScreen() {
     if (params.content) {
       setContent(params.content as string);
     }
-  }, [params.title, params.content]);
+    if (params.imageUrls) {
+      try {
+        const parsedUrls = JSON.parse(params.imageUrls as string);
+        if (Array.isArray(parsedUrls)) {
+          // Validate all URLs before setting them
+          const validatedUrls = parsedUrls.map(validateImageUrl);
+          console.log(
+            "[CreateScreen] Set validated image URLs:",
+            validatedUrls
+          );
+          setImageUrls(validatedUrls);
+        }
+      } catch (error) {
+        console.error("Failed to parse image URLs:", error);
+      }
+    }
+  }, [params.title, params.content, params.imageUrls]);
 
-  const hasUnsavedChanges = title.trim() !== "" || content.trim() !== "";
+  const hasUnsavedChanges =
+    title.trim() !== "" || content.trim() !== "" || imageUrls.length > 0;
 
   const handleBack = () => {
     if (hasUnsavedChanges) {
@@ -61,7 +106,6 @@ export default function CreateScreen() {
   };
 
   const handleSave = async () => {
-    if (!userProfile?.id) return;
     if (!title.trim() || !content.trim()) {
       Alert.alert("Error", "Title and content are required");
       return;
@@ -69,14 +113,26 @@ export default function CreateScreen() {
 
     try {
       setIsLoading(true);
-      await createNote(title.trim(), content.trim());
+
+      // Clean content by removing hashtags
+      const cleanedContent = cleanContent(content.trim());
+
+      await createNote(title.trim(), cleanedContent, imageUrls);
+
+      // Navigate back to home
       router.back();
     } catch (error) {
-      console.error("Failed to create note:", error);
-      Alert.alert("Error", "Failed to save note. Please try again.");
+      console.error("Error creating note:", error);
+      Alert.alert("Error", "Failed to create note");
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Function to clean content by removing hashtags
+  const cleanContent = (text: string): string => {
+    // Replace hashtags (#) with empty string
+    return text.replace(/##/g, "");
   };
 
   const shouldShowPaywall = () => {
@@ -93,6 +149,7 @@ export default function CreateScreen() {
         <CreateNoteContent
           title={title}
           content={content}
+          imageUrls={imageUrls}
           setTitle={setTitle}
           setContent={setContent}
           handleSave={handleSave}
@@ -103,6 +160,7 @@ export default function CreateScreen() {
         <CreateNoteContent
           title={title}
           content={content}
+          imageUrls={imageUrls}
           setTitle={setTitle}
           setContent={setContent}
           handleSave={handleSave}
@@ -154,6 +212,7 @@ export default function CreateScreen() {
 function CreateNoteContent({
   title,
   content,
+  imageUrls,
   setTitle,
   setContent,
   handleSave,
@@ -162,6 +221,7 @@ function CreateNoteContent({
 }: {
   title: string;
   content: string;
+  imageUrls: string[];
   setTitle: (title: string) => void;
   setContent: (content: string) => void;
   handleSave: () => void;
@@ -170,6 +230,42 @@ function CreateNoteContent({
 }) {
   const theme = useAppTheme();
   const [titleHeight, setTitleHeight] = useState(55);
+
+  // Helper function to validate and fix image URLs if needed
+  const validateImageUrl = (url: string): string => {
+    if (!url) return url;
+
+    // Make sure Firebase Storage URLs have properly encoded path segments
+    if (url.includes("/o/users/")) {
+      const regex = /\/o\/users\/([^\/]+)\/images\/([^?]+)/;
+      const match = url.match(regex);
+
+      if (match) {
+        const userId = match[1];
+        const fileName = match[2];
+
+        // Rebuild the URL with proper URL encoding
+        const baseUrl = url.split("/o/")[0];
+        const queryParams = url.split("?")[1];
+
+        return `${baseUrl}/o/users%2F${userId}%2Fimages%2F${fileName}?${queryParams}`;
+      }
+    }
+
+    return url;
+  };
+
+  // Function to debug image URLs
+  const logImageUrls = () => {
+    console.log("Image URLs:", imageUrls);
+    if (imageUrls.length > 0) {
+      console.log("First URL:", imageUrls[0]);
+    }
+  };
+
+  useEffect(() => {
+    logImageUrls();
+  }, [imageUrls]);
 
   return (
     <>
@@ -205,7 +301,7 @@ function CreateNoteContent({
           </PrimaryButton>
         </View>
 
-        <View style={styles.content}>
+        <ScrollView style={styles.content}>
           <TextInput
             placeholder="Title"
             value={title}
@@ -223,6 +319,34 @@ function CreateNoteContent({
               setTitleHeight(event.nativeEvent.contentSize.height)
             }
           />
+
+          {/* Show image gallery if there are images */}
+          {imageUrls && imageUrls.length > 0 ? (
+            <View>
+              <Text variant="subtitle1" style={styles.imagesHeader}>
+                Attached Images ({imageUrls.length})
+              </Text>
+              <ScrollView
+                horizontal
+                style={styles.imageGallery}
+                showsHorizontalScrollIndicator={false}
+              >
+                {imageUrls.map((url, index) => (
+                  <View key={index} style={styles.imageContainer}>
+                    <Image
+                      source={{ uri: validateImageUrl(url) }}
+                      style={styles.galleryImage}
+                      contentFit="cover"
+                      transition={200}
+                      cachePolicy="memory-disk"
+                    />
+                    <RNText style={styles.imageIndex}>{index + 1}</RNText>
+                  </View>
+                ))}
+              </ScrollView>
+            </View>
+          ) : null}
+
           <TextInput
             placeholder="Start writing..."
             value={content}
@@ -231,7 +355,7 @@ function CreateNoteContent({
             style={[styles.contentInput, { color: theme.colors.onSurface }]}
             placeholderTextColor={colors.blackOlive[600]}
           />
-        </View>
+        </ScrollView>
       </View>
     </>
   );
@@ -249,57 +373,94 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: 8,
-    paddingTop: 24,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
-  backButton: {},
+  backButton: {
+    padding: 8,
+  },
   saveButton: {
-    paddingHorizontal: 0,
-    paddingVertical: 0,
+    minWidth: 70,
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 16,
   },
   titleInput: {
-    fontSize: 32,
-    fontFamily: "Nunito-Bold",
-    padding: 16,
-    textAlignVertical: "top",
+    fontSize: 24,
+    fontWeight: "bold",
+    paddingVertical: 8,
+    paddingHorizontal: 0,
   },
   contentInput: {
     flex: 1,
     fontSize: 16,
-    fontFamily: "Nunito",
-    padding: 16,
+    lineHeight: 24,
     textAlignVertical: "top",
+    paddingTop: 8,
+    paddingHorizontal: 0,
   },
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0, 0, 0, 0.5)",
     justifyContent: "center",
     alignItems: "center",
-    padding: 20,
   },
   modalContent: {
-    width: "100%",
-    borderRadius: 16,
+    width: "80%",
+    borderRadius: 12,
     padding: 24,
-    gap: 16,
+    alignItems: "center",
   },
   modalTitle: {
-    marginBottom: 8,
+    marginBottom: 16,
   },
   modalText: {
+    textAlign: "center",
     marginBottom: 24,
   },
   modalButtons: {
     flexDirection: "row",
-    justifyContent: "flex-end",
-    gap: 12,
+    justifyContent: "space-between",
+    width: "100%",
   },
   modalButton: {
-    minWidth: 100,
-  },
-  discardButton: {},
-  content: {
     flex: 1,
-    padding: 16,
+    margin: 8,
+  },
+  discardButton: {
+    borderColor: "#E74C3C",
+  },
+  imagesHeader: {
+    marginTop: 8,
+    marginBottom: 4,
+  },
+  imageGallery: {
+    flexDirection: "row",
+    marginVertical: 12,
+    height: 120,
+  },
+  imageContainer: {
+    position: "relative",
+    marginRight: 8,
+  },
+  galleryImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.blackOlive[200],
+  },
+  imageIndex: {
+    position: "absolute",
+    bottom: 8,
+    right: 8,
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    color: "white",
+    fontSize: 12,
+    fontWeight: "bold",
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 10,
   },
 });
