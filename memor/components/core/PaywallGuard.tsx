@@ -6,6 +6,7 @@ import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/services/db/firebase";
 import { UserProfile } from "@/utils/types/db";
 import { DEFAULT_USAGE_LIMITS } from "@/utils/defaults";
+import { FeatureFlags } from "@/utils/featureFlags";
 
 type PaywallGuardProps = {
   children: React.ReactNode;
@@ -24,6 +25,9 @@ export const PaywallGuard = ({
   const [forceHidePaywall, setForceHidePaywall] = React.useState(false);
 
   useEffect(() => {
+    // If paywalls are disabled, don't check limits
+    if (!FeatureFlags.SHOW_PAYWALLS) return;
+
     if (!initialProfile?.id) return;
 
     const unsubscribe = onSnapshot(
@@ -63,16 +67,18 @@ export const PaywallGuard = ({
   return (
     <>
       {children}
-      <PaywallModal
-        visible={showPaywall}
-        onClose={handleClosePaywall}
-        feature={feature}
-        permanent={
-          feature
-            ? !UsageService.checkUsageLimit(userProfile.id, feature)
-            : false
-        }
-      />
+      {FeatureFlags.SHOW_PAYWALLS && (
+        <PaywallModal
+          visible={showPaywall}
+          onClose={handleClosePaywall}
+          feature={feature}
+          permanent={
+            feature
+              ? !UsageService.checkUsageLimit(userProfile.id, feature)
+              : false
+          }
+        />
+      )}
     </>
   );
 };
