@@ -1,0 +1,32 @@
+appId: com.mymemor.memor
+---
+- launchApp
+- waitForAnimationToEnd
+
+# Find and tap on the Create button in the toolbar
+- assertVisible:
+    id: "create-button"
+- tapOn:
+    id: "create-button"
+
+# Verify we're on the note creation screen
+- assertVisible: "New Note"
+
+# Enter title
+- tapOn:
+    text: "Title"
+- inputText: "Test Note Title"
+
+# Enter content
+- tapOn:
+    text: "Start writing..."
+- inputText: "This is a test note content created by automated testing"
+
+# Save the note
+- assertVisible: "Save"
+- tapOn:
+    text: "Save"
+
+# Wait for save operation and navigation to complete
+- waitForAnimationToEnd
+- assertNotVisible: "New Note"

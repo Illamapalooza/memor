@@ -1,0 +1,11 @@
+appId: com.mymemor.memor
+---
+- launchApp
+- assertVisible: "Sign in to your account"
+- tapOn: "Email"
+- inputText: "dummygame2002@gmail.com"
+- tapOn: "Password"
+- inputText: "llamapalooza123"
+- tapOn: "Sign In"
+- waitForAnimationToEnd
+- assertVisible: "My Mind"

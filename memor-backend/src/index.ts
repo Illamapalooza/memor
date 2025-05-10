@@ -22,16 +22,7 @@ const app = express();
 
 // Security middleware
 app.use(helmet());
-app.use(
-  // cors({
-  //   origin:
-  //     process.env.NODE_ENV === "development"
-  //       ? ["http://localhost:19006", "exp://localhost:19000"]
-  //       : process.env.CORS_ORIGIN,
-  //   credentials: true,
-  // })
-  cors()
-);
+app.use(cors());
 
 // Rate limiting
 const limiter = rateLimit({
@@ -49,7 +40,6 @@ app.use((req, res, next) => {
   }
 });
 
-// Create a raw body parser for webhook route
 app.post(
   "/api/subscriptions/webhook",
   express.raw({ type: "application/json" }),
@@ -64,7 +54,6 @@ app.get("/api/test", (req, res) => {
   res.json({ message: "Test route is working!" });
 });
 
-// Routes
 app.use("/api/customers", customerRoutes);
 app.use("/api/subscriptions", subscriptionRoutes);
 app.use("/api/rag", ragRoutes);

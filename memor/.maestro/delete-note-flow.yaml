@@ -1,0 +1,38 @@
+appId: com.mymemor.memor
+---
+- launchApp
+- waitForAnimationToEnd
+
+# Verify we're on the home screen
+- assertVisible:
+    id: "create-button"
+
+# Create a test note first if needed
+# If there are no notes available, create one
+# - runFlow:
+#     file: create-note-flow.yaml
+#     repeatIf:
+#       notVisible: "Test Note Title"
+
+# Wait for the note card to appear
+- assertVisible: "Test Note Title"
+
+# Find and tap on the delete button of the first note
+- tapOn:
+    id: "delete-note-button-.*"
+
+# Verify the delete confirmation modal appears
+- assertVisible:
+    id: "delete-confirmation-modal"
+- assertVisible: "Delete Note"
+- assertVisible: "Are you sure you want to delete this note? This action cannot be undone."
+
+# Confirm deletion
+- tapOn:
+    id: "confirm-delete-button"
+
+# Wait for deletion to complete
+- waitForAnimationToEnd
+
+# Verify the note has been deleted
+- assertNotVisible: "Test Note Title"

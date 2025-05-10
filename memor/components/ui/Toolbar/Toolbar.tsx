@@ -174,6 +174,7 @@ export function Toolbar() {
           <Text
             variant="bodySmall"
             style={{ fontFamily: "Nunito-Bold", color: theme.colors.onSurface }}
+            testID="create-button"
           >
             Create
           </Text>
