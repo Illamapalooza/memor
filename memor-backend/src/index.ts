@@ -12,6 +12,8 @@ import { ragRoutes } from "./routes/rag.routes";
 import { NoteVectorizationService } from "./services/note-vectorization.service";
 import { transcriptionRoutes } from "./routes/transcription.routes";
 import { ttsRoutes } from "./routes/tts.routes";
+import { imageAnalysisRoutes } from "./routes/image-analysis.routes";
+import { ImageAnalysisService } from "./services/image-analysis.service";
 
 // Load environment variables
 dotenv.config();
@@ -54,8 +56,9 @@ app.post(
   subscriptionRoutes
 );
 
-// Initialize note vectorization service
+// Initialize services
 NoteVectorizationService.getInstance();
+ImageAnalysisService.getInstance();
 
 app.get("/api/test", (req, res) => {
   res.json({ message: "Test route is working!" });
@@ -67,6 +70,8 @@ app.use("/api/subscriptions", subscriptionRoutes);
 app.use("/api/rag", ragRoutes);
 app.use("/api/transcription", transcriptionRoutes);
 app.use("/api/tts", ttsRoutes);
+app.use("/api/image-analysis", imageAnalysisRoutes);
+
 // Error handling
 app.use(errorHandler);
 

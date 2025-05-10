@@ -1,0 +1,32 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Default rule: deny all access
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+    
+    // Allow authenticated users to upload images to their own user directory
+    match /users/{userId}/images/{imageId} {
+      // Allow authenticated users to read and write their own images
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      
+      // Validate uploads to ensure they're images and under size limit (10MB)
+      allow create: if 
+        request.auth != null && 
+        request.auth.uid == userId && 
+        request.resource.size <= 10 * 1024 * 1024 && // 10MB max
+        request.resource.contentType.matches('image/.*');
+    }
+    
+    // Allow access to shared images (if needed)
+    match /shared/{imageId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && 
+                   // Add additional access controls as needed
+                   request.resource.size <= 10 * 1024 * 1024 && 
+                   request.resource.contentType.matches('image/.*');
+    }
+  }
+} 

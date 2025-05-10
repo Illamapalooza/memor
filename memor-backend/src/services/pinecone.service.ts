@@ -205,7 +205,7 @@ export class PineconeService {
 
       // First, find vectors matching the filter
       const queryResponse = await index.query({
-        vector: new Array(512).fill(0), // Dummy vector for metadata-only query, reduced dimensions
+        vector: new Array(1536).fill(0), // Dummy vector for metadata-only query, reduced dimensions
         filter: filter,
         topK: 50, // Reduced from 100 to 50
         includeMetadata: true,

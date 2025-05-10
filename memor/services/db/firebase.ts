@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { initializeFirestore, memoryLocalCache } from "firebase/firestore";
 import { initializeAuth, getReactNativePersistence } from "firebase/auth";
+import { getStorage } from "firebase/storage";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import "react-native-get-random-values";
 
@@ -27,4 +28,7 @@ const auth = initializeAuth(app, {
   persistence: getReactNativePersistence(AsyncStorage),
 });
 
-export { app, db, auth };
+// Initialize Storage
+const storage = getStorage(app);
+
+export { app, db, auth, storage };
