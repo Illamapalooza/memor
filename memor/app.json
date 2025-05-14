@@ -13,40 +13,6 @@
       "backgroundColor": "#ffffff"
     },
     "assetBundlePatterns": ["**/*"],
-    "fonts": [
-      {
-        "asset": "./assets/fonts/Nunito-Regular.ttf",
-        "family": "Nunito"
-      },
-      {
-        "asset": "./assets/fonts/Nunito-Medium.ttf",
-        "family": "Nunito-Medium"
-      },
-      {
-        "asset": "./assets/fonts/Nunito-Light.ttf",
-        "family": "Nunito-Light"
-      },
-      {
-        "asset": "./assets/fonts/Nunito-Bold.ttf",
-        "family": "Nunito-Bold"
-      },
-      {
-        "asset": "./assets/fonts/Inter-Regular.otf",
-        "family": "Inter"
-      },
-      {
-        "asset": "./assets/fonts/Inter-Medium.otf",
-        "family": "Inter-Medium"
-      },
-      {
-        "asset": "./assets/fonts/Inter-Light.otf",
-        "family": "Inter-Light"
-      },
-      {
-        "asset": "./assets/fonts/Inter-Bold.otf",
-        "family": "Inter-Bold"
-      }
-    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.mymemor.memor",
@@ -54,10 +20,11 @@
       "infoPlist": {
         "NSMicrophoneUsageDescription": "Allow Memor to access your microphone for audio recording",
         "NSCameraUsageDescription": "Allow Memor to access your camera",
-        "NSPhotoLibraryUsageDescription": "Allow Memor to access your photos"
+        "NSPhotoLibraryUsageDescription": "Allow Memor to access your photos",
+        "ITSAppUsesNonExemptEncryption": false
       },
       "googleServicesFile": "./GoogleService-Info.plist",
-      "associatedDomains": ["applinks:memor.app"]
+      "associatedDomains": ["applinks:memor.app", "applinks:memor.app"]
     },
     "android": {
       "adaptiveIcon": {
@@ -66,12 +33,10 @@
       },
       "package": "com.mymemor.memor",
       "permissions": [
-        "RECORD_AUDIO",
-        "CAMERA",
-        "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE",
-        "MODIFY_AUDIO_SETTINGS",
         "android.permission.RECORD_AUDIO",
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
         "android.permission.MODIFY_AUDIO_SETTINGS"
       ],
       "googleServicesFile": "./google-services.json",
@@ -114,7 +79,22 @@
           "photosPermission": "The app accesses your photos to let you share them with your friends."
         }
       ],
-      "@react-native-google-signin/google-signin"
+      "@react-native-google-signin/google-signin",
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "./assets/fonts/Nunito-Regular.ttf",
+            "./assets/fonts/Nunito-Medium.ttf",
+            "./assets/fonts/Nunito-Light.ttf",
+            "./assets/fonts/Nunito-Bold.ttf",
+            "./assets/fonts/Inter-Regular.otf",
+            "./assets/fonts/Inter-Medium.otf",
+            "./assets/fonts/Inter-Light.otf",
+            "./assets/fonts/Inter-Bold.otf"
+          ]
+        }
+      ]
     ],
     "extra": {
       "router": {
@@ -123,6 +103,7 @@
       "eas": {
         "projectId": "4ecfbfc9-dff0-49bd-b664-490892deab53"
       }
-    }
+    },
+    "owner": "memor"
   }
 }

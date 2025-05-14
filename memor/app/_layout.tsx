@@ -37,20 +37,16 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <ThemeProvider>
         <PaperProvider>
-          <StripeProvider
-            publishableKey={process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY!}
-          >
-            <AuthProvider>
-              <OnboardingProvider>
-                <PaywallProvider>
-                  <NotesProvider>
-                    <StatusBar style="auto" />
-                    <Slot />
-                  </NotesProvider>
-                </PaywallProvider>
-              </OnboardingProvider>
-            </AuthProvider>
-          </StripeProvider>
+          <AuthProvider>
+            <OnboardingProvider>
+              <PaywallProvider>
+                <NotesProvider>
+                  <StatusBar style="auto" />
+                  <Slot />
+                </NotesProvider>
+              </PaywallProvider>
+            </OnboardingProvider>
+          </AuthProvider>
         </PaperProvider>
       </ThemeProvider>
     </SafeAreaProvider>

@@ -23,7 +23,7 @@ June 2024
 
 ### A. Project Overview
 
-Memor is an AI-powered note-taking application that combines traditional note management capabilities with advanced artificial intelligence features. Utilizing Retrieval Augmented Generation (RAG), Memor enables users to interact with their notes through natural language queries, receive contextually relevant responses, and manage information efficiently with a local-first architecture that maintains cloud synchronization.
+Memor is an AI-powered note-taking application that combines traditional note management capabilities with advanced artificial intelligence features, including image analysis. Utilizing Retrieval Augmented Generation (RAG), Memor enables users to interact with their notes through natural language queries, receive contextually relevant responses, and manage information efficiently with a local-first architecture that maintains cloud synchronization. The application also incorporates an image analysis service that allows users to extract structured information from images, enhancing the note-taking experience by providing contextually relevant content derived from visual data.
 
 ### B. Problem Statement
 
@@ -55,7 +55,7 @@ Traditional note-taking apps often lack intelligent retrieval mechanisms, making
 - Language: TypeScript
 - UI Framework: React Native Paper
 - Navigation: Expo Router
-- State Management: React Context API, @tanstack/react-query
+- State Management: React Context API
 - Payment Processing: @stripe/stripe-react-native
 - List Virtualization: @shopify/flash-list
 - Data Storage: Firebase with local-first persistence
@@ -197,7 +197,7 @@ Firestore Collections:
 
 4. Voice Notes and Queries: Users can record voice notes that are automatically transcribed and can ask questions verbally.
 
-5. Subscription Tiers: Different levels of access to AI features based on subscription status, with a free tier offering basic functionality.
+5. AI Image Analysis: Advanced image processing capabilities that can analyze and extract text from images, identify key concepts, and automatically generate structured notes from visual content.
 
 6. Cross-Platform Compatibility: Available on Android (primary) and iOS platforms through Expo/React Native.
 
@@ -286,7 +286,7 @@ Significant adaptations during development included:
 
 ### A. Development Methodology
 
-The project was developed using Agile methodology with a focus on iterative development and continuous delivery. A feature-branch workflow was implemented with trunk-based development principles to minimize merge conflicts and ensure a stable main branch.
+The project was developed using Rapid methodology, which emphasizes speed and flexibility in the development process, with a focus on iterative development. A feature-branch workflow was implemented with trunk-based development principles to minimize merge conflicts and ensure a stable main branch.
 
 Test-driven development (TDD) was encouraged for critical components, particularly in the backend services and data management layers. The team prioritized creating a minimum viable product (MVP) for each feature before adding enhancements.
 
@@ -310,15 +310,14 @@ The deployment strategy is planned with reliability and ease of rollback in mind
 Mobile Application:
 
 - Development builds created using expo.dev for generating APKs for internal testing
-- Production releases via App Store and Google Play Store
+- Production releases limited to APKs due to financial constraints
 - Feature flags used to control rollout of new functionality
 
 Backend Server:
 
 - Containerized using Docker for consistent environments
-- Deployed on a Kubernetes cluster for scalability
+- Deployed on Vercel for scalability
 - Environment-specific configuration using environment variables
-- Blue-green deployment for zero-downtime updates
 - Automatic rollback on failed deployments
 
 CI/CD Pipeline:
@@ -333,14 +332,13 @@ Security was a primary consideration throughout the development process:
 
 Authentication & Authorization:
 
-- Firebase Authentication for user management
-- JWT-based authentication for API requests
+- Firebase SDK for user management and authentication
 - Role-based access control for administrative functions
 - Session management with secure token storage
 
 Data Protection:
 
-- Field-level encryption for sensitive data
+- Firebase SDK for data protection and rules
 - HTTPS for all API communications
 - Secure storage of API keys using environment variables
 - Data minimization principles applied throughout
@@ -352,7 +350,7 @@ API Security:
 - CORS configuration to restrict unauthorized domains
 - Helmet middleware for HTTP security headers
 
-Payment Security:
+Payment Security (To be implemented):
 
 - PCI compliance through Stripe
 - No storage of payment information on servers
@@ -373,7 +371,6 @@ Frontend Optimization:
 Backend Scalability:
 
 - Stateless API design for horizontal scaling
-- Rate limiting and caching for high-traffic endpoints
 - Asynchronous processing for resource-intensive operations
 - Database indexing and query optimization
 
@@ -407,7 +404,6 @@ End-to-End Testing:
 
 - User journey testing using Maestro
 - Critical path testing (note creation, AI queries, subscription)
-- Cross-platform compatibility testing
 
 Performance Testing:
 
@@ -608,6 +604,7 @@ Technical Challenges:
 - Offline Synchronization: Resolving conflicts between local and server data required a sophisticated conflict resolution strategy that evolved throughout development.
 - Audio Transcription Accuracy: Initial implementation of voice notes had accuracy issues in noisy environments, requiring additional processing and user correction mechanisms.
 - Vector Database Integration: Optimizing the embedding and retrieval process required extensive experimentation to balance accuracy and performance.
+- Mobile Deployment Builds: The complexity of building and deploying mobile applications was greater than anticipated, with strict guidelines from app stores and the need for extensive testing across multiple devices complicating the release process.
 
 Process Challenges:
 
@@ -620,6 +617,7 @@ External Challenges:
 - API Changes: Several OpenAI API changes required adaptation during development.
 - Expo Updates: A major Expo SDK update midway through development required significant refactoring but provided valuable new capabilities.
 - Firebase Cost Structure: Changes to Firebase pricing required optimization of database access patterns.
+- Mobile Deployment Challenges: Deploying a mobile app proved to be more difficult than anticipated due to strict limitations imposed by both Google Play and the App Store, compounded by financial constraints that limited resources for addressing these challenges.
 
 ### C. Proposed Enhancements
 
@@ -627,23 +625,21 @@ Future development roadmap includes:
 
 Short-term Enhancements (3-6 months):
 
-- Collaborative Notes: Enable shared notes with synchronized editing capabilities
-- Advanced AI Templates: Specialized AI prompts for different use cases (summarization, analysis, etc.)
-- Offline Audio Transcription: On-device processing for improved privacy and reduced dependency
+- Collaborative Knowledge Sharing: Implement real-time collaborative notes tailored for academic and research environments, allowing multiple users to edit and contribute simultaneously.
+- Contextual AI Templates: Develop specialized AI prompts designed for niche applications such as academic research, project management, and creative writing, enhancing user productivity in specific domains.
+- Secure Offline Audio Transcription: Introduce on-device audio transcription capabilities focused on privacy for sensitive discussions, ensuring users can record and transcribe notes without external dependencies.
 
 Medium-term Enhancements (6-12 months):
 
-- Desktop Application: Expand to desktop platforms using Electron
-- Knowledge Graph Visualization: Visual representation of connections between notes
-- Custom AI Fine-tuning: Allow users to train the AI on their specific knowledge domain
-- Advanced Search Capabilities: Semantic search across all notes with filtering options
+- Cross-Platform Desktop Application: Launch a desktop version using Electron, optimized for researchers and professionals who require robust note-taking features on larger screens.
+- Interactive Knowledge Graph: Create a dynamic visualization tool that illustrates relationships between notes, aiding users in understanding complex topics and enhancing knowledge retention.
+- Enhanced Semantic Search: Implement advanced search functionalities that allow users to filter and retrieve notes based on context, relevance, and specific criteria.
 
 Long-term Vision (1-2 years):
 
-- Multi-modal Content Analysis: AI processing of images and PDFs within notes
-- Workflow Automation: Integrate with productivity tools and enable automated actions
-- Personal AI Assistants: Specialized agents trained on user's knowledge base
-- Enterprise Features: Team spaces, advanced permission systems, and audit logs
+- Comprehensive Multi-modal Analysis: Equip the application with AI capabilities to analyze and extract information from various content types, including images, PDFs, and handwritten notes.
+- Integrated Workflow Automation: Develop features that connect with popular productivity tools, enabling users to automate repetitive tasks and streamline their workflows.
+- Personalized AI Knowledge Assistants: Create specialized AI agents that learn from individual user interactions, providing tailored support and insights based on their accumulated knowledge.
 
 ## VIII. References and Appendices
 
