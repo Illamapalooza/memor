@@ -1,11 +1,11 @@
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
-import dotenv from "dotenv";
 import { rateLimit } from "express-rate-limit";
 
 import { errorHandler } from "./middleware/error.middleware";
 import { logger } from "./utils/logger";
+import { PORT, CORS_ORIGIN, IS_PRODUCTION } from "./utils/config";
 import { subscriptionRoutes } from "./routes/subscription.routes";
 import { customerRoutes } from "./routes/customer.routes";
 import { ragRoutes } from "./routes/rag.routes";
@@ -15,14 +15,16 @@ import { ttsRoutes } from "./routes/tts.routes";
 import { imageAnalysisRoutes } from "./routes/image-analysis.routes";
 import { ImageAnalysisService } from "./services/image-analysis.service";
 
-// Load environment variables
-dotenv.config();
-
 const app = express();
 
 // Security middleware
 app.use(helmet());
-app.use(cors());
+app.use(
+  cors({
+    origin: CORS_ORIGIN,
+    credentials: true,
+  })
+);
 
 // Rate limiting
 const limiter = rateLimit({
@@ -64,10 +66,12 @@ app.use("/api/image-analysis", imageAnalysisRoutes);
 // Error handling
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 3000;
-
 app.listen(PORT, () => {
-  logger.info(`Server running on port ${PORT}`);
+  logger.info(
+    `Server running on port ${PORT} in ${
+      IS_PRODUCTION ? "production" : "development"
+    } mode`
+  );
 });
 
 export default app;
