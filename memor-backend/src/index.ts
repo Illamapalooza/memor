@@ -17,6 +17,9 @@ import { ImageAnalysisService } from "./services/image-analysis.service";
 
 const app = express();
 
+// Enable trust proxy for proper IP detection behind proxies
+app.set("trust proxy", true);
+
 // Security middleware
 app.use(helmet());
 app.use(
