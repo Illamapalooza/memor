@@ -17,8 +17,10 @@ import { ImageAnalysisService } from "./services/image-analysis.service";
 
 const app = express();
 
-// Enable trust proxy for proper IP detection behind proxies
-app.set("trust proxy", true);
+// Configure trust proxy for proper IP detection behind proxies
+// Use a more specific setting than 'true' for better security
+// For AWS Lambda behind API Gateway, setting to 1 is typically appropriate
+app.set("trust proxy", 1);
 
 // Security middleware
 app.use(helmet());
@@ -32,7 +34,7 @@ app.use(
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
+  max: 300, // Increased limit for testing with multiple devices
 });
 app.use(limiter);
 
