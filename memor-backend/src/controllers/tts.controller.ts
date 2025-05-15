@@ -8,20 +8,12 @@ export class TTSController {
     try {
       const { text } = req.body;
 
-      if (!text) {
+      if (!text || typeof text !== "string") {
         throw new AppError(400, "Text is required");
       }
 
-      const audioBuffer = await TTSService.generateSpeech(text);
-
-      res.set({
-        "Content-Type": "audio/mpeg",
-        "Content-Length": audioBuffer.length,
-        "Content-Disposition": "attachment; filename=speech.mp3",
-        "Accept-Ranges": "bytes",
-      });
-
-      res.send(audioBuffer);
+      const audioUrl = await TTSService.generateSpeech(text);
+      res.json({ audioUrl });
     } catch (error) {
       logger.error("Error in generateSpeech:", error);
       if (error instanceof AppError) {

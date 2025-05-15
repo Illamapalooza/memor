@@ -6,6 +6,7 @@ import path from "path";
 import { promisify } from "util";
 import { v4 as uuidv4 } from "uuid";
 import { mkdir } from "fs/promises";
+import axios from "axios";
 
 const writeFile = promisify(fs.writeFile);
 const unlink = promisify(fs.unlink);
@@ -18,7 +19,10 @@ export class TranscriptionService {
   });
 
   private static async ensureTempDir() {
-    const tempDir = path.join(__dirname, "../temp");
+    // Use /tmp directory on Vercel or other serverless environments
+    const isVercel = process.env.VERCEL === "1";
+    const tempDir = isVercel ? "/tmp/audio" : path.join(__dirname, "../temp");
+
     try {
       await mkdir(tempDir, { recursive: true });
     } catch (error) {
@@ -29,6 +33,143 @@ export class TranscriptionService {
     return tempDir;
   }
 
+  static async transcribeAudioFromURL(
+    url: string,
+    mode: TranscriptionMode = "note",
+    fileExtension: string = ".mp3"
+  ): Promise<{ title?: string; content: string }> {
+    const tempDir = await this.ensureTempDir();
+
+    // Use the correct file extension from the original file
+    // Ensure it has one of the supported file extensions for OpenAI
+    const validExtensions = [
+      ".flac",
+      ".m4a",
+      ".mp3",
+      ".mp4",
+      ".mpeg",
+      ".mpga",
+      ".oga",
+      ".ogg",
+      ".wav",
+      ".webm",
+    ];
+    let ext = fileExtension.toLowerCase();
+    if (!validExtensions.includes(ext)) {
+      ext = ".mp3"; // Default to mp3 if not a supported extension
+    }
+
+    const tempFilePath = path.join(tempDir, `${uuidv4()}${ext}`);
+
+    try {
+      // Download file from URL
+      const response = await axios({
+        method: "GET",
+        url: url,
+        responseType: "arraybuffer",
+      });
+
+      // Save downloaded file
+      await writeFile(tempFilePath, response.data);
+
+      // Log file path and size for debugging
+      const stats = fs.statSync(tempFilePath);
+      logger.info(
+        `Downloaded file to ${tempFilePath}, size: ${stats.size} bytes`
+      );
+
+      // Transcribe audio
+      const transcription = await this.openai.audio.transcriptions.create({
+        file: fs.createReadStream(tempFilePath),
+        model: "whisper-1",
+        language: "en",
+      });
+
+      if (!transcription.text) {
+        throw new AppError(500, "No transcription generated");
+      }
+
+      // Different processing based on mode
+      if (mode === "query") {
+        const completion = await this.openai.chat.completions.create({
+          model: "gpt-4",
+          messages: [
+            {
+              role: "system",
+              content: `Convert this transcribed audio into a clear question while maintaining the original intent and words.
+              Your task is to:
+              1. Remove filler words and speech artifacts (oh's, umms, hmm, etc.)
+              2. Correct grammar WITHOUT changing the original words used in the query
+              3. Preserve the exact terminology, names, and specific references used by the speaker
+              4. Only if absolutely necessary to make sense, modify words, but ALWAYS prioritize maintaining the original intent and vocabulary
+              5. DO NOT make the question more formal if it changes the original wording
+              6. Ensure the question remains in the speaker's own voice and style`,
+            },
+            {
+              role: "user",
+              content: transcription.text,
+            },
+          ],
+        });
+
+        if (!completion.choices[0].message.content) {
+          throw new AppError(500, "Failed to process transcription");
+        }
+
+        return {
+          content: completion.choices[0].message.content.trim(),
+        };
+      }
+
+      // Original note processing
+      const completion = await this.openai.chat.completions.create({
+        model: "gpt-4",
+        messages: [
+          {
+            role: "system",
+            content: `You are a helpful assistant that organizes transcribed audio notes while preserving the original content.
+            Your task is to:
+            1. Clean up the transcription by removing filler words (oh's, umms, hmm, etc.)
+            2. Generate a concise title based on the main topic
+            3. Format the content with proper paragraphs and punctuation
+            4. Correct grammar errors WITHOUT changing the original words used
+            5. Preserve the exact terminology, names, and specific references 
+            6. Only if absolutely necessary to make sense, modify words, but ALWAYS prioritize maintaining the original intent and vocabulary
+            Return the result in JSON format with 'title' and 'content' fields.`,
+          },
+          {
+            role: "user",
+            content: transcription.text,
+          },
+        ],
+      });
+
+      if (!completion.choices[0].message.content) {
+        throw new AppError(500, "Failed to process transcription");
+      }
+
+      const result = JSON.parse(completion.choices[0].message.content);
+
+      return {
+        title: result.title,
+        content: result.content,
+      };
+    } catch (error) {
+      logger.error("Error transcribing audio:", error);
+      throw error instanceof AppError
+        ? error
+        : new AppError(500, "Failed to transcribe audio");
+    } finally {
+      // Clean up temp file
+      try {
+        await unlink(tempFilePath);
+      } catch (error) {
+        logger.error("Error deleting temp file:", error);
+      }
+    }
+  }
+
+  // Keep the original method for backward compatibility
   static async transcribeAudio(
     file: Express.Multer.File,
     mode: TranscriptionMode = "note"

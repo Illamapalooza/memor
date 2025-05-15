@@ -70,25 +70,18 @@ export const useTTS = () => {
           throw new Error("Failed to generate speech");
         }
 
-        // Get the audio buffer as blob
-        const audioBlob = await response.blob();
+        // Get the audio file URL from the response
+        const { audioUrl } = await response.json();
 
-        // Convert blob to base64
-        const reader = new FileReader();
-        const base64Promise = new Promise((resolve) => {
-          reader.onloadend = () => {
-            if (typeof reader.result === "string") {
-              resolve(reader.result.split(",")[1]);
-            }
-          };
-        });
-        reader.readAsDataURL(audioBlob);
-        const base64Audio = (await base64Promise) as string;
+        // Download the audio file
+        const downloadResult = await FileSystem.downloadAsync(
+          audioUrl,
+          tempUri
+        );
 
-        // Write the audio file
-        await FileSystem.writeAsStringAsync(tempUri, base64Audio, {
-          encoding: FileSystem.EncodingType.Base64,
-        });
+        if (downloadResult.status !== 200) {
+          throw new Error("Failed to download audio file");
+        }
 
         // Load and play audio
         console.log("Creating sound object...");
