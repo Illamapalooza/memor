@@ -1,6 +1,7 @@
 {
   "cli": {
-    "version": ">= 5.9.1"
+    "version": ">= 5.9.1",
+    "appVersionSource": "local"
   },
   "build": {
     "development": {
@@ -14,11 +15,24 @@
       "distribution": "internal",
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "NODE_ENV": "testing",
+        "EXPO_PUBLIC_FIREBASE_API_KEY": "AIzaSyCONaWVuVE_52RtQKh1KFDP6CMVPrwanLs",
+        "EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN": "memor-f06eb.firebaseapp.com",
+        "EXPO_PUBLIC_FIREBASE_PROJECT_ID": "memor-f06eb",
+        "EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET": "memor-f06eb.firebasestorage.app",
+        "EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID": "319369146329",
+        "EXPO_PUBLIC_FIREBASE_APP_ID": "1:319369146329:web:d90f3d23d9d1c882f7b3c8",
+        "EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID": "G-NXDH0728WQ"
       }
     },
     "production": {
       "android": {
-        "buildType": "app-bundle"
+        "buildType": "apk"
+      },
+      "env": {
+        "NODE_ENV": "production"
       }
     }
   },
